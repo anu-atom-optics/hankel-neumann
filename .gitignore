@@ -1,0 +1,12 @@
+.*.tex
+*.log
+*.ini
+*.fmt
+*.watcher_pid
+*.out
+*.aux
+*.bbl
+*.blg
+*.fls
+.*Notes.bib
+HankelNeumann.pdf
