@@ -10,7 +10,7 @@
 % Copy this file to another name and then work on that file.
 % That way, you always have this original template file to use.
 
-\documentclass[aip,amsmath,amssymb,reprint,onecolumn]{revtex4-1}
+\documentclass[aip,amsmath,amssymb,reprint,twocolumn]{revtex4-1}
 %\documentclass[aip,reprint]{revtex4-1}
 
 \usepackage{graphicx,hyperref}
@@ -43,7 +43,7 @@
 %\altaffiliation{}
 
 \author{J.J. Hope}
-\affiliation{Princeton Plasma Physics Laboratory, PO Box 451, Princeton, NJ 08543, USA}
+\affiliation{Research School of Physics and Engineering, Australian National University, ACT 0200, Australia}
 
 % Collaboration name, if desired (requires use of superscriptaddress option in \documentclass). 
 % \noaffiliation is required (may also be used with the \author command).
@@ -67,14 +67,99 @@ We derive a quasi-discrete Hankel transform (QDHT) appropriate for problems with
 \section{Introduction}
 \label{sec:Introduction}
 
-History: The original idea formulation of the zero-order quasi-discrete Hankel transform was developed by \citet{Yu:1998}.  This was generalized to arbitrary integer order transforms by \citet{Guizar-Sicairos:2004}.  The QDHT is not the only formulation of a discrete Hankel transform.  There are a number (see \citep{Yu:1998} for a list) of others, some of which use the DFT, but they all suffer problems with accuracy and stability.  Yu's formulation is slower ($O(N^2)$ time) than some of these `fast' Hankel transforms which can be performed in $O(N \log N)$ time, but the stability of the method is critical to applications where the DHT must be applied repeatedly, such as solving PDEs using spectral methods.
+History: The original idea formulation of the zero-order quasi-discrete Hankel transform (QDHT) was developed by \citet{Yu:1998}.  This was generalized to arbitrary integer order transforms by \citet{Guizar-Sicairos:2004}.  The QDHT is not the only formulation of a discrete Hankel transform.  There are a number (see \citep{Yu:1998} for a list) of others, some of which use the DFT, but they all suffer problems with accuracy and stability.  Yu's formulation is slower ($O(N^2)$ time) than some of these `fast' Hankel transforms which can be performed in $O(N \log N)$ time, but the stability of the method is critical to applications where the DHT must be applied repeatedly, such as solving PDEs using spectral methods.
+
+Other potentially relevant literature: \citet{Ronen:2006} applied the idea to Bogoliubov modes in a cylindrical trap which was how I found out about this, the method is widely applied in the optics literature (see the many citations of \citet{Guizar-Sicairos:2004}) where I fear the Dirichlet boundary condition is more useful.
 
 I haven't found anything particularly interesting in more recent literature, but I should probably read \citet{Cerjan:2007} before we publish to work out if it should be cited.
 
-Of course we should cite the XMDS paper \citet{Dennis:2013}.
+Of course we should cite the XMDS paper \citep{Dennis:2013}.
+
+One of the useful properties of the Hankel transform is that it provides accurate computation of the Laplacian for problems with radial symmetry:
+\begin{align}
+  \nabla^2 \left[f(r) e^{i m \theta}\right] &= \left\{\mathcal{H}^{-1}_m\left[(-k^2)\tilde{f}(k)\right](r)\right\}e^{i m \theta}
+\end{align}
+where the $m$-order Hankel transform and its inverse are defined by
+\begin{align}
+  \mathcal{H}_m[f](k) &= \tilde{f}(k) = \int_0^{\infty} r f(r) J_m(k r) \, dr \\
+  \mathcal{H}^{-1}_m[\tilde{f}](r) &= f(r) = \int_0^{\infty} k \tilde{f}(k) J_m(k r)\, dk,
+\end{align}
+where $J_m(r)$ is the Bessel function of the first kind of order $m$. Or improve the notation as appropriate.  I've never actually seen the $\mathcal{H}_m$, $\mathcal{H}^{-1}_m$ notation used anywhere.
 
 \section{Derivation of the method}
 \label{sec:Derivation}
+
+The definitions of the Hankel transform and its inverse are
+\begin{align}
+  f(r) &= \int_0^\infty k \tilde{f}(k) J_{m}(k r)\, dk, \\
+  \tilde{f}(k) &= \int_0^\infty r f(r) J_{m}(k r)\, dr.
+\end{align}
+The Hankel transform is an orthogonal function decomposition which transforms a function $f(r)$ into an integral over the order-$m$ Bessel functions. The Bessel functions are orthogonal with respect to the weight factor $r$ and satisfy the orthogonality relation
+\begin{align}
+  \int_0^\infty r J_m(k r) J_m(k' r) \,dr &= \frac{\delta(k - k')}{k}.
+\end{align}
+
+Our goal is to derive a similar orthogonal function decomposition over the finite spatial domain $0 \leq r \leq R$ and the corresponding wavenumber domain $0 \leq k \leq K$.  The quasi-discrete Hankel transform and its inverse the quasi-discrete inverse Hankel transform (QDIHT) satisfy
+\begin{align}
+  f(r) &= \int_0^K k \tilde{f}(k) J_{m}(k r)\, dk,  \label{eq:QDHT}\\
+  \tilde{f}(k) &= \int_0^R r f(r) J_{m}(k r)\, dr,  \label{eq:QDIHT}
+\end{align}
+where $f(r)$ and $\tilde{f}(k)$ are decomposed as a sum of Bessel functions
+\begin{align}
+  f(r) &= \sum_i f_i J_m(k_i r), & \tilde{f}(k) &= \sum_i \tilde{f}_i J_m(k r_i), \label{eq:Decomposition}
+\end{align}
+where the $r_i$ and $k_i$ are respectively the grid points of the spatial and wavenumber domains and their distribution has not yet been specified.
+
+\begin{widetext}
+For the basis functions in the decomposition given by Eq.~\eqref{eq:Decomposition} to be orthogonal, we require for all $i \neq j$
+\begin{align}
+  \int_0^{R} r J_m(k_i r) J_m(k_j r)\, dr &= \frac{R}{k_i^2-k_j^2} \left[k_j J_m(k_i R) J_m'(k_j R) - k_i J_m(k_j R) J_m'(k_i R)\right] = 0. \label{eq:DiscreteOrthogonality}
+\end{align}
+This discrete orthogonality relationship can be satisfied by choosing the $k_i$ such that either $J_m(k_i R) = 0$ or $J_m'(k_i R) = 0$.  In the former case $f(r)$ will satisfy Dirichlet boundary conditions at $r=R$ (i.e.\ $f(R) = 0$) and in the latter case $f(r)$ will satisfy Neumann boundary conditions (i.e.\ $f'(R) = 0$).  The case of Dirichlet boundary conditions has been considered before \citep{Yu:1998,Guizar-Sicairos:2004} and in this paper we focus on the Neumann boundary condition case.
+\end{widetext}
+
+For the $k_i$ to satisfy $J_m'(k_i R) = 0$, the $k_i$ must be given by
+\begin{align}
+  k_i &= j_{m,i}'/R,
+\end{align}
+where $j_{m,i}'$ is defined as in \citet{Abramowitz:1972} as the $i$th positive zero of the derivative of the Bessel function of order $m$, except that $r=0$ is counted as the first zero of $J_0(r)$.  The symmetry of Eqs.~\eqref{eq:QDHT} and \eqref{eq:QDIHT} implies that the spatial grid points $r_i$ are similarly given by
+\begin{align}
+  r_i &= j_{m,i}'/K.
+\end{align}
+
+Our basis functions now satisfy the orthogonality condition
+\begin{align}
+  \int_0^R r J_m(k_i r) J_m(k_j r)\, dr &= \frac{1}{2} \delta_{ij} \left(R^2 - \frac{m^2}{k_i^2}\right) J_m^2(k_i R)
+\end{align}
+
+Substituting the decomposition of $\tilde{f}(k)$ given by \eqref{eq:Decomposition} into the definition of the QDHT \eqref{eq:QDHT} we obtain
+\begin{align}
+  f(r_j) &= \int_0^K k \sum_i \tilde{f}_i J_m(k r_i) J_m(k r_j)\, dk, \\
+  &= \frac{1}{2}\tilde{f}_j \left(K^2 - \frac{m^2}{r_j^2}\right) J_m^2(K r_j).
+\end{align}
+Next substituting the decomposition of $f(r)$ gives
+\begin{align}
+  \sum_i f_i J_m(k_i r_j) &= \frac{1}{2}\tilde{f}_j \left(K^2 - \frac{m^2}{r_j^2}\right) J_m^2(K r_j), \\
+  \implies \tilde{f}_j &= \frac{2}{K^2 - m^2/r_j^2} \frac{1}{J_m^2(K r_j)} \sum_i f_i J_m(k_i r_j), \\
+  \implies f_i &= \frac{2}{R^2 - m^2/k_i^2} \frac{1}{J_m^2(k_i R)} \sum_j \tilde{f}_j J_m(k_i r_j),
+\end{align}
+where the last line follows by symmetry between the QDHT and the QDIHT.
+
+Finally
+\begin{align}
+  f(r_j) &= \sum_i \tilde{f}(k_i) \frac{2}{R^2 - m^2/k_i^2}\frac{1}{J_m^2(k_i R)} J_m(k_i r_j)
+\end{align}
+
+
+\section{Error analysis}
+\label{sec:ErrorAnalysis}
+
+\section{Example calculation}
+\label{sec:Example}
+Ideas for example: wave equation (should be similar to shallow water waves in a bucket); radial heat propagation in an isolated disk; whatever problem David Zwicker is solving.
+
+\section{Conclusion}
+\label{sec:Conclusion}
 
 
 
