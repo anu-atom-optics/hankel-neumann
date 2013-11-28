@@ -173,6 +173,10 @@ where
 \section{Error analysis}
 \label{sec:ErrorAnalysis}
 
+We note that the error of our transform is significantly larger than that of the Dirichlet Hankel transform.  Perhaps we speculate on why.  We can demonstrate some comparisons between exact transforms and computed ones.  But also point out that in the case we care about, we want to do a transform and an inverse transform, and we care most about the decomposition of $f(r)$ in terms of Bessel functions, hence we can choose the QDIHT to be norm-preserving, and then compute the inverse transform by taking the inverse of the transformation matrix.  We don't truly care that QDHT=QDIHT, what we care about is the decomposition of $f(r)$ in terms of Bessel functions because it gives us a simple way to compute the Laplacian of $f(r)$.  If we \emph{also} cared about the Laplacian of $\tilde{f}(k)$, i.e.\ $\nabla_k^2 f(k)$, then we can't use this trick.  But in practice, we won't care about that. So hooray!  See any problems with this approach?
+
+I can also define a transform from $f(r)$ satisfying $f'(R)=0$ to $\tilde{f}(k)$ satisfying $f(K)=0$ which has about half the error of the Neumann Hankel transform, but I'm not sure why I should bother.
+
 \section{Example calculation}
 \label{sec:Example}
 Ideas for example: wave equation (should be similar to shallow water waves in a bucket); radial heat propagation in an isolated disk; whatever problem David Zwicker is solving.
