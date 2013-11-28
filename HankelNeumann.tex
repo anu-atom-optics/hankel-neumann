@@ -17,6 +17,7 @@
 % \usepackage{pdfsync}
 
 \newcommand{\relphantom}[1]{\phantom{\mathrel{#1}}}
+\newcommand{\abs}[1]{\left|#1\right|}
 
 \begin{document}
 
@@ -135,20 +136,38 @@ Our basis functions now satisfy the orthogonality condition
 Substituting the decomposition of $\tilde{f}(k)$ given by \eqref{eq:Decomposition} into the definition of the QDHT \eqref{eq:QDHT} we obtain
 \begin{align}
   f(r_j) &= \int_0^K k \sum_i \tilde{f}_i J_m(k r_i) J_m(k r_j)\, dk, \\
-  &= \frac{1}{2}\tilde{f}_j \left(K^2 - \frac{m^2}{r_j^2}\right) J_m^2(K r_j).
+  &= \tilde{f}_j \frac{1}{2}K^2  \left(1 - \frac{m^2}{r_j^2 K^2}\right) J_m^2(K r_j), \\
+  &= \tilde{f}_j \frac{1}{2}K^2  \left(1 - \frac{m^2}{(j'_{m,j})^2}\right) J_m^2(j'_{m,j}).
 \end{align}
 Next substituting the decomposition of $f(r)$ gives
 \begin{align}
-  \sum_i f_i J_m(k_i r_j) &= \frac{1}{2}\tilde{f}_j \left(K^2 - \frac{m^2}{r_j^2}\right) J_m^2(K r_j), \\
-  \implies \tilde{f}_j &= \frac{2}{K^2 - m^2/r_j^2} \frac{1}{J_m^2(K r_j)} \sum_i f_i J_m(k_i r_j), \\
-  \implies f_i &= \frac{2}{R^2 - m^2/k_i^2} \frac{1}{J_m^2(k_i R)} \sum_j \tilde{f}_j J_m(k_i r_j),
+  \sum_i f_i J_m(k_i r_j) &= \tilde{f}_j \frac{1}{2} K^2 \left(1 - \frac{m^2}{(j'_{m,j})^2}\right) J_m^2(j'_{m,j}), \\
+  \implies \tilde{f}_j &= \frac{2}{K^2} \frac{\sum_i f_i J_m(k_i r_j)}{\left[1-m^2/(j'_{m,j})^2\right] J_m^2(j'_{m,j})} , \\
+  \implies f_i &= \frac{2}{R^2} \frac{\sum_j \tilde{f}_j J_m(k_i r_j)}{\left[1-m^2/(j'_{m,i})^2\right] J_m^2(j'_{m,i})} ,
 \end{align}
 where the last line follows by symmetry between the QDHT and the QDIHT.
 
-Finally
+Finally we have an explicit expression for the QDHT with Neumann boundary conditions
 \begin{align}
-  f(r_j) &= \sum_i \tilde{f}(k_i) \frac{2}{R^2 - m^2/k_i^2}\frac{1}{J_m^2(k_i R)} J_m(k_i r_j)
+  f(r_j) &= \sum_i \tilde{f}(k_i) \frac{2}{R^2} \frac{J_m\left(j'_{m,i} j'_{m,j}/S\right)}{\left[1-m^2/(j'_{m,i})^2\right]J_m^2(j'_{m,i})},
 \end{align}
+where $S = K R$.  In practice, the spatial domain $0 \leq r \leq R$ will be specified and $K$ will be chosen to be appropriate for the chosen number of grid points $N$.  $S(N)$ is therefore an as-yet undetermined constant.
+
+\begin{widetext}
+Defining
+\begin{align}
+    F_j &= \frac{R}{\sqrt{1-m^2/(j'_{m,j})^2} \abs{J_m(j'_{m,j})}} f(r_j), \\
+    \tilde{F}_i &= \frac{K}{\sqrt{1-m^2/(j'_{m,i})^2} \abs{J_m(j'_{m,i})}}  \tilde{f}(k_i),
+\end{align}
+the transform reduces to
+\begin{align}
+    \tilde{F}_i &= \sum_j T_{ij} F_j,
+\end{align}
+where
+\begin{align}
+    T_{ij} &= \frac{2 J_m(j'_{m,i} j'_{m,j}/S)}{\sqrt{\left[1-m^2/(j'_{m,i})^2\right]\left[1-m^2/(j'_{m,j})^2\right]} \abs{J_m(j'_{m,i})} \abs{J_m(j'_{m,j})} S}
+\end{align}
+\end{widetext}
 
 
 \section{Error analysis}

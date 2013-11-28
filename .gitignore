@@ -10,3 +10,5 @@
 *.fls
 .*Notes.bib
 HankelNeumann.pdf
+.*.pdf
+.DS_Store
