@@ -1,0 +1,488 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     16760,        479]
+NotebookOptionsPosition[     15563,        435]
+NotebookOutlinePosition[     15944,        452]
+CellTagsIndexPosition[     15901,        449]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"QIntegral", "[", 
+   RowBox[{"weights_", ",", "abscissas_", ",", "f_"}], "]"}], ":=", 
+  RowBox[{"Sum", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"weights", "[", 
+      RowBox[{"[", "i", "]"}], "]"}], 
+     RowBox[{"f", "[", 
+      RowBox[{"abscissas", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], "]"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", "1", ",", 
+      RowBox[{"Length", "[", "weights", "]"}]}], "}"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"FrobeniusNorm", "[", "matrix_", "]"}], ":=", 
+  RowBox[{"Sqrt", "[", 
+   RowBox[{"Total", "[", 
+    RowBox[{
+     SuperscriptBox["matrix", "2"], ",", "2"}], "]"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"FrobeniusNorm2", "[", "matrix_", "]"}], ":=", 
+  RowBox[{"Total", "[", 
+   RowBox[{
+    SuperscriptBox["matrix", "2"], ",", "2"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.598752833340148*^9, 3.598752834563389*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ExpectedDirichletQuadrature", "[", "Nmax_", "]"}], ":=", 
+  RowBox[{"ExpectedDirichletQuadrature", "[", 
+   RowBox[{"Nmax", ",", 
+    RowBox[{"BesselJZero", "[", 
+     RowBox[{"0", ",", 
+      RowBox[{"Nmax", "+", "1"}]}], "]"}]}], "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ExpectedDirichletQuadrature", "[", 
+   RowBox[{"Nmax_", ",", "S_"}], "]"}], ":=", 
+  RowBox[{"Transpose", "[", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        FractionBox["2", 
+         SuperscriptBox["S", "2"]], 
+        FractionBox["1", 
+         SuperscriptBox[
+          RowBox[{"BesselJ", "[", 
+           RowBox[{"1", ",", 
+            RowBox[{"BesselJZero", "[", 
+             RowBox[{"0", ",", "i1"}], "]"}]}], "]"}], "2"]]}], ",", 
+       FractionBox[
+        RowBox[{"BesselJZero", "[", 
+         RowBox[{"0", ",", "i1"}], "]"}], "S"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"i1", ",", "1", ",", "Nmax"}], "}"}]}], "]"}], 
+   "]"}]}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"DiscreteOrthogonalityMatrix", "[", "quadrature_", "]"}], ":=", 
+  RowBox[{"DiscreteOrthogonalityMatrix", "[", 
+   RowBox[{"quadrature", ",", 
+    RowBox[{"Length", "[", 
+     RowBox[{"quadrature", "[", 
+      RowBox[{"[", "1", "]"}], "]"}], "]"}]}], "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"DiscreteOrthogonalityMatrix", "[", 
+   RowBox[{"quadrature_", ",", "Nmax_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"weights", "=", 
+       RowBox[{"quadrature", "[", 
+        RowBox[{"[", "1", "]"}], "]"}]}], ",", 
+      RowBox[{"abscissas", "=", 
+       RowBox[{"quadrature", "[", 
+        RowBox[{"[", "2", "]"}], "]"}]}]}], "}"}], ",", 
+    RowBox[{"Table", "[", 
+     RowBox[{
+      RowBox[{"QIntegral", "[", 
+       RowBox[{"weights", ",", "abscissas", ",", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"2", "/", 
+           RowBox[{"Abs", "[", 
+            RowBox[{
+             RowBox[{"BesselJ", "[", 
+              RowBox[{"1", ",", 
+               RowBox[{"BesselJZero", "[", 
+                RowBox[{"0", ",", "i2"}], "]"}]}], "]"}], 
+             RowBox[{"BesselJ", "[", 
+              RowBox[{"1", ",", 
+               RowBox[{"BesselJZero", "[", 
+                RowBox[{"0", ",", "i3"}], "]"}]}], "]"}]}], "]"}]}], " ", 
+          RowBox[{"BesselJ", "[", 
+           RowBox[{"0", ",", 
+            RowBox[{
+             RowBox[{"BesselJZero", "[", 
+              RowBox[{"0", ",", "i2"}], "]"}], "#"}]}], "]"}], 
+          RowBox[{"BesselJ", "[", 
+           RowBox[{"0", ",", 
+            RowBox[{
+             RowBox[{"BesselJZero", "[", 
+              RowBox[{"0", ",", "i3"}], "]"}], "#"}]}], "]"}]}], "&"}]}], 
+       "]"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"i2", ",", "1", ",", "Nmax"}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"i3", ",", "1", ",", "Nmax"}], "}"}]}], "]"}]}], 
+   "]"}]}]}], "Input",
+ CellChangeTimes->{{3.598752476925331*^9, 3.5987524852230177`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"TestQuadrature", "[", "Nmax_", "]"}], ":=", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"Table", "[", 
+     RowBox[{
+      RowBox[{"Unique", "[", "w", "]"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"iw", ",", "1", ",", "Nmax"}], "}"}]}], "]"}], ",", 
+    RowBox[{"Table", "[", 
+     RowBox[{
+      RowBox[{"Unique", "[", "x", "]"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"ix", ",", "1", ",", "Nmax"}], "}"}]}], "]"}]}], 
+   "}"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"InitialGuess", "[", "quadrature_", "]"}], ":=", 
+  RowBox[{"Transpose", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"Flatten", "@", "quadrature"}], ",", 
+     RowBox[{"Flatten", "@", 
+      RowBox[{"ExpectedDirichletQuadrature", "[", 
+       RowBox[{"Length", "[", 
+        RowBox[{"quadrature", "[", 
+         RowBox[{"[", "1", "]"}], "]"}], "]"}], "]"}]}]}], "}"}], 
+   "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"TestSearch", "[", 
+   RowBox[{"Nmax_", ",", "precision_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"quadrature", "=", 
+      RowBox[{"TestQuadrature", "[", "Nmax", "]"}]}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"soln", "=", 
+      RowBox[{"FindMinimum", "[", 
+       RowBox[{
+        RowBox[{"Evaluate", "[", 
+         RowBox[{"FrobeniusNorm", "[", 
+          RowBox[{
+           RowBox[{"DiscreteOrthogonalityMatrix", "[", "quadrature", "]"}], 
+           "-", 
+           RowBox[{"IdentityMatrix", "[", "Nmax", "]"}]}], "]"}], "]"}], ",", 
+        
+        RowBox[{"Evaluate", "[", 
+         RowBox[{"InitialGuess", "[", "quadrature", "]"}], "]"}], ",", 
+        RowBox[{"WorkingPrecision", "\[Rule]", "precision"}], ",", 
+        RowBox[{"MaxIterations", "\[Rule]", "100000"}]}], "]"}]}], ";", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"soln", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], ",", 
+       RowBox[{"quadrature", "/.", 
+        RowBox[{"soln", "[", 
+         RowBox[{"[", "2", "]"}], "]"}]}]}], "}"}]}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.598752547754932*^9, 3.59875257753962*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"TestSearch2", "[", 
+   RowBox[{"Nmax_", ",", "precision_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"quadrature", "=", 
+      RowBox[{"TestQuadrature", "[", "Nmax", "]"}]}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"soln", "=", 
+      RowBox[{"FindMinimum", "[", 
+       RowBox[{
+        RowBox[{"Evaluate", "[", 
+         RowBox[{"FrobeniusNorm2", "[", 
+          RowBox[{
+           RowBox[{"DiscreteOrthogonalityMatrix", "[", "quadrature", "]"}], 
+           "-", 
+           RowBox[{"IdentityMatrix", "[", "Nmax", "]"}]}], "]"}], "]"}], ",", 
+        
+        RowBox[{"Evaluate", "[", 
+         RowBox[{"InitialGuess", "[", "quadrature", "]"}], "]"}], ",", 
+        RowBox[{"WorkingPrecision", "\[Rule]", "precision"}], ",", 
+        RowBox[{"MaxIterations", "\[Rule]", "100000"}]}], "]"}]}], ";", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"soln", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], ",", 
+       RowBox[{"quadrature", "/.", 
+        RowBox[{"soln", "[", 
+         RowBox[{"[", "2", "]"}], "]"}]}]}], "}"}]}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.5987528444456053`*^9, 3.598752847716579*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Timing", "@", 
+  RowBox[{"TestSearch", "[", 
+   RowBox[{"4", ",", "40"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.598752552916463*^9, 3.598752556546067*^9}, {
+  3.5987526937747717`*^9, 3.5987527096223288`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"60.33019600000003`", ",", 
+   RowBox[{"{", 
+    RowBox[{
+    "9.22304979921469080185926223264916819316461274655594108183872655424951`\
+40.*^-9", ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "0.0361102324352639414281999071511980233414289896677644397697700886849\
+4719882703`40.", ",", 
+         "0.082531157677758282613702047655036499059947905848447886887305972157\
+72768841263`40.", ",", 
+         "0.124913853003254023953824003784139348439558659303342391811038046624\
+46476817497`40.", ",", 
+         "0.161335151041402103839806977107828816563987209453261219010338190665\
+24596667276`40."}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+        "0.1679223796222444607102492339002089116966447069202231966500577022496\
+406439433`40.", ",", 
+         "0.383744451352839897795902203932935585076816578824367191690256582420\
+20671430908`40.", ",", 
+         "0.596339824156897807323893945097057248680230462416251403970814457687\
+93097195101`40.", ",", 
+         "0.801740109878318289679774268149685710024569694633924113109342744266\
+44636089407`40."}], "}"}]}], "}"}]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.598752566165213*^9, 3.598752642022738*^9, 
+  3.598752707638836*^9, 3.598752771258214*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Timing", "@", 
+  RowBox[{"TestSearch2", "[", 
+   RowBox[{"4", ",", "40"}], "]"}]}]], "Input",
+ CellChangeTimes->{3.5987528543953943`*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"19.57351300000002`", ",", 
+   RowBox[{"{", 
+    RowBox[{
+    "8.506464759879414831491652686264937689792698659135565146997427`40.*^-17",
+      ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "0.0361102324352639414281488139190051095526949584047703281910772941783\
+3909746432`40.", ",", 
+         "0.082531157677758282613595945742433498835631602617273724541480196786\
+51282912305`40.", ",", 
+         "0.124913853003254023953728930098347503044660059345716224851413319074\
+22439685826`40.", ",", 
+         "0.161335151041402103839897401692763770423780991890673145942550420614\
+9070365431`40."}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+        "0.1679223796222444607101297043273365661668765763782638887553109736231\
+2086374139`40.", ",", 
+         "0.383744451352839897795639092429322266659812304433230026454739437267\
+3705102516`40.", ",", 
+         "0.596339824156897807323539713703930192700281484409890530336873983222\
+4911693332`40.", ",", 
+         "0.801740109878318289679485969211974990551876181308999185601221776148\
+22848610868`40."}], "}"}]}], "}"}]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.598752874965494*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Timing", "@", 
+  RowBox[{"TestSearch", "[", 
+   RowBox[{"5", ",", "40"}], "]"}]}]], "Input",
+ CellChangeTimes->{3.598752713638227*^9}],
+
+Cell[BoxData["$Aborted"], "Output",
+ CellChangeTimes->{3.598752837285186*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"Timing", "@", 
+  RowBox[{"TestSearch", "[", 
+   RowBox[{"6", ",", "40"}], "]"}]}]], "Input",
+ CellChangeTimes->{3.59875271931012*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Timing", "@", 
+  RowBox[{"TestSearch2", "[", 
+   RowBox[{"7", ",", "40"}], "]"}]}]], "Input",
+ CellChangeTimes->{3.598752725773838*^9, 3.5987529058581257`*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"203.04657699999996`", ",", 
+   RowBox[{"{", 
+    RowBox[{
+    "3.3504485625495782909606408258841537262392914182603381821952079`40.*^-\
+16", ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "0.0134192734917108226562329826825292012339883592664314515262012495688\
+7194407133`40.", ",", 
+         "0.031119236381276055250044038560661000926965941010184741851963763479\
+42050125803`40.", ",", 
+         "0.048522442851359757164579921366022303638417983982890640926682204041\
+34571524201`40.", ",", 
+         "0.065294766985527865338480358846590697608440177663316842768910979934\
+93624933772`40.", ",", 
+         "0.080940830081864286843465720959228177343387262588051289064143322956\
+53772131013`40.", ",", 
+         "0.094850669337004576986277390985470376532290701901094991596954535784\
+8162482987`40.", ",", 
+         "0.107083173302731489417597614716274268069192790966980605200995148422\
+53425467545`40."}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+        "0.1022858906027635951734201301825124870090055979668020007806928976378\
+4311653902`40.", ",", 
+         "0.234570873916631397794190840805246192766660280797268035661505211787\
+69239570157`40.", ",", 
+         "0.367068847242373425899808828861609192217876943295580353287376585159\
+02279507879`40.", ",", 
+         "0.498695067468371813043348049478253266357115808174354443119150994970\
+89762574145`40.", ",", 
+         "0.628627086039558626249653777423960674151878638312226774943868784277\
+96814698276`40.", ",", 
+         "0.755838599835104335590132013119776434596042309789470756725623581643\
+74932797458`40.", ",", 
+         "0.879431198002976698058645381232772492760668749643914693213431058861\
+14447675492`40."}], "}"}]}], "}"}]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.598753110258877*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Timing", "@", 
+  RowBox[{"TestSearch2", "[", 
+   RowBox[{"10", ",", "30"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.5987531418969727`*^9, 3.598753147787112*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"1114.513358`", ",", 
+   RowBox[{"{", 
+    RowBox[{
+    "2.262248700563018868429751511188393747396462544321581226816373`30.*^-16",
+      ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "0.0068936183649044382127089571380168834304217675401731066305`30.", 
+         ",", "0.016027400191159035711768241878283421216292635619206895816`30.\
+", ",", "0.0251235875024452733787508216732140172839786521698848702776`30.", 
+         ",", "0.0341276145305285986806886570414620367598123068641525528712`\
+30.", ",", "0.0429745759303700354732985836791935775771360878627508560727`30.",
+          ",", "0.051561653328691353274434506051761677580824479346436731215`\
+30.", ",", "0.0597240140560153536512324683355196759236831782345025009895`30.",
+          ",", "0.0672243374454751069217884000835600900376151967801554114696`\
+30.", ",", "0.0738541501340727794384346024941506325460061533119069484984`30.",
+          ",", "0.0798650186929436968791415394995319140925892305099937978413`\
+30."}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+        "0.0733015544004486822245097076350547082595467965695597913004`30.", 
+         ",", "0.1682068222858869090745854040778607153769768973198887468193`\
+30.", ",", "0.2635444521571441442333785727561050200858908114450323995222`30.",
+          ",", "0.3587852024204683951392453394370885474900755506318427093231`\
+30.", ",", "0.4537204569426019421717953564670288244487701733246288424587`30.",
+          ",", "0.5481361655489170170398735848979660638217538579366010852318`\
+30.", ",", "0.6417379151933450670114917546758761042671133095524759330226`30.",
+          ",", "0.7341036959205960481923983550104776069899072054758678506372`\
+30.", ",", "0.8247032802231749085055105030571545831432677635860913458686`30.",
+          ",", "0.9131735631566042991679896895237706391028323242461079729036`\
+30."}], "}"}]}], "}"}]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.598754262821698*^9}]
+}, Open  ]]
+},
+Evaluator->"Local 4",
+WindowSize->{740, 867},
+WindowMargins->{{Automatic, 834}, {129, Automatic}},
+FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (February 23, \
+2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 478, 14, 43, "Input"],
+Cell[1038, 36, 217, 6, 33, "Input"],
+Cell[1258, 44, 250, 6, 33, "Input"],
+Cell[1511, 52, 1036, 30, 98, "Input"],
+Cell[2550, 84, 2015, 54, 133, "Input"],
+Cell[4568, 140, 478, 15, 27, "Input"],
+Cell[5049, 157, 430, 12, 58, "Input"],
+Cell[5482, 171, 1192, 31, 133, "Input"],
+Cell[6677, 204, 1197, 31, 133, "Input"],
+Cell[CellGroupData[{
+Cell[7899, 239, 235, 5, 27, "Input"],
+Cell[8137, 246, 1290, 30, 158, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9464, 281, 161, 4, 27, "Input"],
+Cell[9628, 287, 1216, 29, 158, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[10881, 321, 158, 4, 27, "Input"],
+Cell[11042, 327, 77, 1, 27, "Output"]
+}, Open  ]],
+Cell[11134, 331, 157, 4, 27, "Input"],
+Cell[CellGroupData[{
+Cell[11316, 339, 183, 4, 27, "Input"],
+Cell[11502, 345, 1840, 41, 248, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[13379, 391, 186, 4, 27, "Input"],
+Cell[13568, 397, 1979, 35, 188, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)

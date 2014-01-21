@@ -68,7 +68,11 @@ We derive a quasi-discrete Hankel transform (QDHT) appropriate for problems with
 \section{Introduction}
 \label{sec:Introduction}
 
-History: The original idea formulation of the zero-order quasi-discrete Hankel transform (QDHT) was developed by \citet{Yu:1998}.  This was generalized to arbitrary integer order transforms by \citet{Guizar-Sicairos:2004}.  The QDHT is not the only formulation of a discrete Hankel transform.  There are a number (see \citep{Yu:1998} for a list) of others, some of which use the DFT, but they all suffer problems with accuracy and stability.  Yu's formulation is slower ($O(N^2)$ time) than some of these `fast' Hankel transforms which can be performed in $O(N \log N)$ time, but the stability of the method is critical to applications where the DHT must be applied repeatedly, such as solving PDEs using spectral methods.
+NOTE: This paper is basically redundant due to \citet{Kai-Ming:2009}.
+
+History: The first record of the idea of the quasi-discrete Hankel transform (QDHT) I can find is \citet{Johnson:1987}, where he focussed exclusively on the Dirichlet boundary conditions.  \citet{Lemoine:1994} appears to have independently derived the QDHT, and briefly discusses a transform and its inverse with Neumann boundary conditions, mostly in response to the announcement of the work of \citet{Stade:1995}.  \citet{Stade:1995} focus on the Dirichlet/Neumann pair.  \citet{Yu:1998} seems to have independently derived the QDHT again as there is no citation for anything preceding it.  \citet{Yu:1998} considered the $m=0$ order case only, and that was generalized by \citet{Guizar-Sicairos:2004}, but that case had already been solved by \citet{Johnson:1987,Lemoine:1994}.  
+
+The QDHT is not the only formulation of a discrete Hankel transform.  There are a number (see \citep{Yu:1998} for a list) of others, some of which use the DFT, but they all suffer problems with accuracy and stability.  Yu's formulation is slower ($O(N^2)$ time) than some of these `fast' Hankel transforms which can be performed in $O(N \log N)$ time, but the stability of the method is critical to applications where the DHT must be applied repeatedly, such as solving PDEs using spectral methods.
 
 Other potentially relevant literature: \citet{Ronen:2006} applied the idea to Bogoliubov modes in a cylindrical trap which was how I found out about this, the method is widely applied in the optics literature (see the many citations of \citet{Guizar-Sicairos:2004}) where I fear the Dirichlet boundary condition is more useful.
 
@@ -92,51 +96,56 @@ where $J_m(r)$ is the Bessel function of the first kind of order $m$. Or improve
 
 The definitions of the Hankel transform and its inverse are
 \begin{align}
-  f(r) &= \int_0^\infty k \tilde{f}(k) J_{m}(k r)\, dk, \\
-  \tilde{f}(k) &= \int_0^\infty r f(r) J_{m}(k r)\, dr.
+  \tilde{f}(k) &= \int_0^\infty r f(r) J_{m}(k r)\, dr, \\
+  f(r) &= \int_0^\infty k \tilde{f}(k) J_{m}(k r)\, dk. 
 \end{align}
-The Hankel transform is an orthogonal function decomposition which transforms a function $f(r)$ into an integral over the order-$m$ Bessel functions. The Bessel functions are orthogonal with respect to the weight factor $r$ and satisfy the orthogonality relation
+The Hankel transform is an orthogonal function decomposition which transforms a function $f(r)$ into an integral over the Bessel functions of order $m$. The Bessel functions are orthogonal with respect to the weight factor $r$ and satisfy the orthogonality relation
 \begin{align}
   \int_0^\infty r J_m(k r) J_m(k' r) \,dr &= \frac{\delta(k - k')}{k}.
 \end{align}
 
 Our goal is to derive a similar orthogonal function decomposition over the finite spatial domain $0 \leq r \leq R$ and the corresponding wavenumber domain $0 \leq k \leq K$.  The quasi-discrete Hankel transform and its inverse the quasi-discrete inverse Hankel transform (QDIHT) satisfy
 \begin{align}
-  f(r) &= \int_0^K k \tilde{f}(k) J_{m}(k r)\, dk,  \label{eq:QDHT}\\
-  \tilde{f}(k) &= \int_0^R r f(r) J_{m}(k r)\, dr,  \label{eq:QDIHT}
+  \tilde{f}(k) &= \int_0^R r f(r) J_{m}(k r)\, dr,  \label{eq:QDHT} \\
+  f(r) &= \int_0^K k \tilde{f}(k) J_{m}(k r)\, dk,  \label{eq:QDIHT}
 \end{align}
 where $f(r)$ and $\tilde{f}(k)$ are decomposed as a sum of Bessel functions
 \begin{align}
-  f(r) &= \sum_i f_i J_m(k_i r), & \tilde{f}(k) &= \sum_i \tilde{f}_i J_m(k r_i), \label{eq:Decomposition}
+  f(r) &= \sum_i f_i J_m(k_i r),  \label{eq:RDecomposition} \\
+  \tilde{f}(k) &= \sum_i \tilde{f}_i J_m(k r_i), \label{eq:KDecomposition}
 \end{align}
 where the $r_i$ and $k_i$ are respectively the grid points of the spatial and wavenumber domains and their distribution has not yet been specified.
 
 \begin{widetext}
-For the basis functions in the decomposition given by Eq.~\eqref{eq:Decomposition} to be orthogonal, we require for all $i \neq j$
+For the basis functions used in the decomposition \eqref{eq:RDecomposition} to be orthogonal, we require for all $i \neq j$
 \begin{align}
-  \int_0^{R} r J_m(k_i r) J_m(k_j r)\, dr &= \frac{R}{k_i^2-k_j^2} \left[k_j J_m(k_i R) J_m'(k_j R) - k_i J_m(k_j R) J_m'(k_i R)\right] = 0. \label{eq:DiscreteOrthogonality}
+  \int_0^{R} r J_m(k_i r) J_m(k_j r)\, dr &= \frac{R}{k_i^2-k_j^2} \left[k_j J_m(k_i R) J_m'(k_j R) - k_i J_m(k_j R) J_m'(k_i R)\right] = 0, \label{eq:DiscreteROrthogonality}
 \end{align}
-This discrete orthogonality relationship can be satisfied by choosing the $k_i$ such that either $J_m(k_i R) = 0$ or $J_m'(k_i R) = 0$.  In the former case $f(r)$ will satisfy Dirichlet boundary conditions at $r=R$ (i.e.\ $f(R) = 0$) and in the latter case $f(r)$ will satisfy Neumann boundary conditions (i.e.\ $f'(R) = 0$).  The case of Dirichlet boundary conditions has been considered before \citep{Yu:1998,Guizar-Sicairos:2004} and in this paper we focus on the Neumann boundary condition case.
+This discrete orthogonality relationship can be satisfied by choosing the $k_i$ such that either\footnote{Actually, this will be satisfied provided $Z_i(R)=0$ where $Z_i(r) = a J_m(k_i r) + b \frac{d}{dr} J_m(k_i r)$ for any values of $a$ and $b$.} $J_m(k_i R) = 0$ or $J_m'(k_i R) = 0$.  In the former case $f(r)$ will satisfy Dirichlet boundary conditions at $r=R$ (i.e.\ $f(R) = 0$) and in the latter case $f(r)$ will satisfy Neumann boundary conditions (i.e.\ $f'(R) = 0$).  The case of Dirichlet boundary conditions has been considered before \citep{Yu:1998,Guizar-Sicairos:2004} and in this paper we focus on the Neumann boundary condition case.
 \end{widetext}
 
 For the $k_i$ to satisfy $J_m'(k_i R) = 0$, the $k_i$ must be given by
 \begin{align}
   k_i &= j_{m,i}'/R,
 \end{align}
-where $j_{m,i}'$ is defined as in \citet{Abramowitz:1972} as the $i$th positive zero of the derivative of the Bessel function of order $m$, except that $r=0$ is counted as the first zero of $J_0(r)$.  The symmetry of Eqs.~\eqref{eq:QDHT} and \eqref{eq:QDIHT} implies that the spatial grid points $r_i$ are similarly given by
+where $j_{m,i}'$ is defined as in \citet{Abramowitz:1972} as the $i$th positive zero of the derivative of the Bessel function of order $m$, except that $r=0$ is counted as the first zero of $J_0(r)$.
+
+The spatial grid points are similarly given by
 \begin{align}
-  r_i &= j_{m,i}'/K.
+  r_i &= j_{m,i}'/K,
+\end{align}
+which is obtained by requiring the basis functions used in \eqref{eq:KDecomposition} to be orthogonal and enforcing Neumann boundary conditions\footnote{It would also be possible to enforce Neumann boundary conditions on $f(r)$ and Dirichlet boundary conditions on $\tilde{f}(k)$.  This loses the self-inverse property, but we don't really care about that as discussed later.  This approach reduces the error of the transform by about a factor of 2, which I'm not sure is enough to justify the additional complexity it would add to the paper.} on $\tilde{f}(k)$.  
+
+Our basis functions now satisfy the orthogonality conditions
+\begin{align}
+  \int_0^R r J_m(k_i r) J_m(k_j r)\, dr &= \frac{1}{2} \delta_{ij} R^2 \left(1 - \frac{m^2}{k_i^2 R^2}\right) J_m^2(k_i R), \label{eq:DiscreteROrthogonalityCondition}\\
+  \int_0^K k J_m(k r_i) J_m(k r_j)\, dk &= \frac{1}{2} \delta_{ij} K^2 \left(1 - \frac{m^2}{K^2 r_i^2}\right) J_m^2(K r_i). \label{eq:DiscreteKOrthogonalityCondition}
 \end{align}
 
-Our basis functions now satisfy the orthogonality condition
-\begin{align}
-  \int_0^R r J_m(k_i r) J_m(k_j r)\, dr &= \frac{1}{2} \delta_{ij} \left(R^2 - \frac{m^2}{k_i^2}\right) J_m^2(k_i R)
-\end{align}
-
-Substituting the decomposition of $\tilde{f}(k)$ given by \eqref{eq:Decomposition} into the definition of the QDHT \eqref{eq:QDHT} we obtain
+Substituting the decomposition of $\tilde{f}(k)$ given by \eqref{eq:KDecomposition} into the definition of the QDIHT \eqref{eq:QDIHT} we obtain
 \begin{align}
   f(r_j) &= \int_0^K k \sum_i \tilde{f}_i J_m(k r_i) J_m(k r_j)\, dk, \\
-  &= \tilde{f}_j \frac{1}{2}K^2  \left(1 - \frac{m^2}{r_j^2 K^2}\right) J_m^2(K r_j), \\
+  &= \tilde{f}_j \frac{1}{2}K^2  \left(1 - \frac{m^2}{K^2 r_j^2}\right) J_m^2(K r_j), \\
   &= \tilde{f}_j \frac{1}{2}K^2  \left(1 - \frac{m^2}{(j'_{m,j})^2}\right) J_m^2(j'_{m,j}).
 \end{align}
 Next substituting the decomposition of $f(r)$ gives
@@ -165,17 +174,28 @@ the transform reduces to
 \end{align}
 where
 \begin{align}
-    T_{ij} &= \frac{2 J_m(j'_{m,i} j'_{m,j}/S)}{\sqrt{\left[1-m^2/(j'_{m,i})^2\right]\left[1-m^2/(j'_{m,j})^2\right]} \abs{J_m(j'_{m,i})} \abs{J_m(j'_{m,j})} S}
+    T_{ij} &= \frac{2 J_m(j'_{m,i} j'_{m,j}/S)}{\sqrt{\left[1-m^2/(j'_{m,i})^2\right]\left[1-m^2/(j'_{m,j})^2\right]} \abs{J_m(j'_{m,i})} \abs{J_m(j'_{m,j})} S}.
 \end{align}
+For comparison, the relevant transform matrix for Dirichlet boundary conditions is\citep{Guizar-Sicairos:2004}
+\begin{align}
+  T_{ij} &= \frac{2 J_m(j_{m,i} j_{m,j}/S)}{\abs{J_{m+1}(j_{m,i})} \abs{J_{m+1}(j_{m,j})} S},
+\end{align}
+where $j_{m,i}$ is the $i$th zero of the Bessel function of order $m$.
 \end{widetext}
 
 
 \section{Error analysis}
 \label{sec:ErrorAnalysis}
 
-We note that the error of our transform is significantly larger than that of the Dirichlet Hankel transform.  Perhaps we speculate on why.  We can demonstrate some comparisons between exact transforms and computed ones.  But also point out that in the case we care about, we want to do a transform and an inverse transform, and we care most about the decomposition of $f(r)$ in terms of Bessel functions, hence we can choose the QDIHT to be norm-preserving, and then compute the inverse transform by taking the inverse of the transformation matrix.  We don't truly care that QDHT=QDIHT, what we care about is the decomposition of $f(r)$ in terms of Bessel functions because it gives us a simple way to compute the Laplacian of $f(r)$.  If we \emph{also} cared about the Laplacian of $\tilde{f}(k)$, i.e.\ $\nabla_k^2 f(k)$, then we can't use this trick.  But in practice, we won't care about that. So hooray!  See any problems with this approach?
+We note that the error of our transform is significantly larger than that of the Dirichlet Hankel transform.  Perhaps we speculate on why.  We can demonstrate some comparisons between exact transforms and computed ones.  But also point out that in the case we care about, we want to do a transform and an inverse transform, and we care most about the decomposition of $f(r)$ in terms of Bessel functions, hence we can choose the QDIHT to be norm-preserving, and then compute the inverse transform by taking the inverse of the transformation matrix.  We don't truly care that QDHT=QDIHT, what we care about is the decomposition of $f(r)$ in terms of Bessel functions because it gives us a simple way to compute the Laplacian of $f(r)$.  If we \emph{also} cared about the Laplacian of $\tilde{f}(k)$, i.e.\ $\nabla_k^2 f(k)$, then we can't use this trick.  But in practice, we won't care about that. So hooray!  See any problems with this approach?  A good idea would be to test this approach by computing the error of the Laplacian of a function with and without this trick.  One consequence of this is that we will probably need to redefine the `Gaussian quadrature' in one of the bases, and it may become slightly less accurate.
 
 I can also define a transform from $f(r)$ satisfying $f'(R)=0$ to $\tilde{f}(k)$ satisfying $f(K)=0$ which has about half the error of the Neumann Hankel transform, but I'm not sure why I should bother.
+
+I think our transform is not exactly its own self-inverse because the orthogonality conditions Eq.~\eqref{eq:DiscreteROrthogonalityCondition} and Eq.~\eqref{eq:DiscreteKOrthogonalityCondition} satisfied by the basis functions are in terms of integrals, not a type of Gaussian quadrature.  What we would really like would be to choose $r_i$, $k_i$, $w_i$, $M_i$ and $S$ such that
+\begin{align}
+  \sum_l w_l J_m(k_i r_l) J_m(k_j r_l) &= \delta_{ij} M_i,
+\end{align}
+but these conditions cannot all be enforced simultaneously.  We have $N^2$ conditions to enforce but only $4N+1$ free parameters at our disposal.
 
 \section{Example calculation}
 \label{sec:Example}
