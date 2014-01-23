@@ -8,7 +8,7 @@ import mpmath
 mpmath.mp.prec = 64
 
 def relative_difference(a, b):
-  return 2.0 * numpy.abs(a - b) / (numpy.abs(a) + numpy.abs(b))
+  return numpy.abs(a - b) / (numpy.abs(a) + numpy.abs(b))
 
 def quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions = None):
   """
@@ -115,7 +115,7 @@ def quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions = 
   return error_norm, weight_derivatives, abscissa_derivatives
 
 def bessel_neumann_S_guess(m, N):
-  return 0.5*numpy.sum(numpy.double([mpmath.besseljzero(m, i) for i in xrange(N, N+2)]))
+  return numpy.double(mpmath.besseljzero(m, N+1, derivative=True))
 
 def bessel_dirichlet_S_guess(m, N):
   return numpy.double(mpmath.besseljzero(m, N+1))
@@ -125,6 +125,18 @@ def bessel_initial_guess(m, N, S_guess):
   abscissas = [zero / S_guess for zero in bessel_j_zeros]
   weights = [2.0 / (S_guess * mpmath.besselj(m + 1, bessel_j_zeros[i]))**2 for i in xrange(N)]
 
+  weights = numpy.reshape(numpy.double(weights), (N,))
+  abscissas = numpy.reshape(numpy.double(abscissas), (N,))
+  
+  return weights, abscissas
+
+def bessel_neumann_kspace_initial_guess(m, N, S_guess):
+  bessel_j_zeros = [mpmath.besseljzero(m, i, derivative=True) for i in xrange(1, N+1)]
+  abscissas = [zero / S_guess for zero in bessel_j_zeros]
+  additional_factor = (lambda i: 1.0) if m == 0 else (lambda i: 1.0 - (m/bessel_j_zeros[i])**2)
+  
+  weights = [2.0 / (S_guess * additional_factor(i) * mpmath.besselj(m, bessel_j_zeros[i]))**2 for i in xrange(N)]
+  
   weights = numpy.reshape(numpy.double(weights), (N,))
   abscissas = numpy.reshape(numpy.double(abscissas), (N,))
   
@@ -142,7 +154,7 @@ def optimise_weights_abscissas(weights, abscissas, f, fprime, N_basis_functions 
     error_norm, derror_dweight, derror_dabscissa = quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions)
     return error_norm, numpy.concatenate((derror_dweight, derror_dabscissa))
   
-  result = scipy.optimize.minimize(optimise_function, initial_guess, jac = True)
+  result = scipy.optimize.minimize(optimise_function, initial_guess, jac = True, options = dict(disp=True))
   return numpy.split(result.x, 2)
 
 def simple_bessel_optimise(m, N_coordinates, f, fprime, S_guess, N_basis_functions = None):
@@ -161,7 +173,24 @@ def simple_bessel_optimise(m, N_coordinates, f, fprime, S_guess, N_basis_functio
   result = scipy.optimize.minimize(optimise_function, S_guess, jac = True, options = dict(disp=True))
   return bessel_initial_guess(m, N, result.x)
 
-N = 100
+def simple_bessel_neumann_optimise(m, N_coordinates, f, fprime, S_guess, N_basis_functions = None):
+  N_basis_functions = N_basis_functions or N_coordinates
+  
+  def optimise_function(S):
+    weights, abscissas = bessel_neumann_kspace_initial_guess(m, N_coordinates, S)
+    weights = numpy.reshape(weights, (N_coordinates,))
+    abscissas = numpy.reshape(abscissas, (N_coordinates,))
+    error_norm, derror_dweight, derror_dabscissa = quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions)
+    
+    derror_ds = -2.0 / S * numpy.sum(derror_dweight * weights) - 1.0/S * numpy.sum(derror_dabscissa * abscissas)
+    
+    return error_norm, derror_ds
+    
+  result = scipy.optimize.minimize(optimise_function, S_guess, jac = True, options = dict(disp=True))
+  return bessel_neumann_kspace_initial_guess(m, N, result.x)
+
+
+N = 40
 
 def test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values):
   N_coordinates = N_coordinates or len(bessel_j_zeros)
@@ -178,20 +207,20 @@ def test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values):
 
   optimised_weights, optimised_abscissas = optimise_weights_abscissas(simple_optimised_weights, simple_optimised_abscissas, f, fprime, N_basis_functions)
   print 'bessel optimised', quadrature_goal_function(optimised_weights, optimised_abscissas, f, fprime, N_basis_functions)[0]
+  return optimised_weights, optimised_abscissas
 
 
 def test_bessel_neumann(m, N_coordinates, N_basis_functions = None):
   N_basis_functions = N_basis_functions or N_coordinates
   
   S_guess = bessel_neumann_S_guess(m, N_coordinates)
-  weights, abscissas = bessel_initial_guess(m, N_coordinates, S_guess)
   bessel_j_zeros = numpy.double([mpmath.besseljzero(m, i, derivative=True) for i in xrange(1, N_basis_functions+1)])
   bessel_j_values = numpy.sqrt(2.0) / numpy.abs(scipy.special.jn(m, bessel_j_zeros))
   
   if m > 0:
     bessel_j_values /= numpy.sqrt(1.0 - (m / bessel_j_zeros)**2)
 
-  test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values)
+  return test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values)
 
 def test_bessel_dirichlet(m, N_coordinates, N_basis_functions = None):
   N_basis_functions = N_basis_functions or N_coordinates
@@ -200,8 +229,37 @@ def test_bessel_dirichlet(m, N_coordinates, N_basis_functions = None):
   bessel_j_zeros = numpy.double([mpmath.besseljzero(m, i) for i in xrange(1, N+1)])
   bessel_j_values = numpy.sqrt(2.0) / numpy.abs(scipy.special.jn(m + 1, bessel_j_zeros))
   
-  test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values)
+  return test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values)
 
+def test_bessel_neumann_neumann(m, N_coordinates, N_basis_functions = None):
+  N_basis_functions = N_basis_functions or N_coordinates
+  
+  S_guess = bessel_neumann_S_guess(m, N_coordinates)
+  bessel_j_zeros = numpy.double([mpmath.besseljzero(m, i, derivative=True) for i in xrange(1, N_basis_functions+1)])
+  bessel_j_values = numpy.sqrt(2.0) / numpy.abs(scipy.special.jn(m, bessel_j_zeros))
+  
+  if m > 0:
+    bessel_j_values /= numpy.sqrt(1.0 - (m / bessel_j_zeros)**2)
+  
+  f = lambda i, x: bessel_j_values[i] * scipy.special.jn(m, bessel_j_zeros[i] * x)
+  fprime = lambda i, x: bessel_j_values[i] * bessel_j_zeros[i] * scipy.special.jvp(m, bessel_j_zeros[i] * x)
+  
+  weights, abscissas = bessel_neumann_kspace_initial_guess(m, N_coordinates, S_guess)
+  print 'bessel', quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions)[0]
+  
+  simple_optimised_weights, simple_optimised_abscissas = simple_bessel_neumann_optimise(m, N_coordinates, f, fprime, S_guess, N_basis_functions)
+  print 'simple bessel optimised', quadrature_goal_function(simple_optimised_weights, simple_optimised_abscissas, f, fprime, N_basis_functions)[0]
+  
+  optimised_weights, optimised_abscissas = optimise_weights_abscissas(simple_optimised_weights, simple_optimised_abscissas, f, fprime, N_basis_functions)
+  print 'bessel optimised', quadrature_goal_function(optimised_weights, optimised_abscissas, f, fprime, N_basis_functions)[0]
+  return optimised_weights, optimised_abscissas
 
-test_bessel_neumann(2, N, N/2)
-test_bessel_dirichlet(2, N, N/2)
+test_bessel_neumann(1, N)
+# w2, x2 = test_bessel_neumann_neumann(0, N)
+
+# print relative_difference(w1, w2)
+# print relative_difference(x1, x2)
+# print x1
+# print x2
+
+test_bessel_dirichlet(1, N)

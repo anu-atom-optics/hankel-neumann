@@ -18,6 +18,10 @@
 
 \newcommand{\relphantom}[1]{\phantom{\mathrel{#1}}}
 \newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\Nbasis}{N_{\text{basis}}}
+\newcommand{\Nx}{N_{x}}
+\DeclareMathOperator{\Real}{Re}
+\DeclareMathOperator{\Imag}{Im}
 
 \begin{document}
 
@@ -26,7 +30,7 @@
 % Multiple \preprint commands are allowed.
 %\preprint{}
 
-\title{Quasi-discrete Hankel transform with Neumann boundary conditions} %Title of paper
+\title{The pseudo-spectral method, Gaussian quadrature and quasi-Gaussian quadrature: What Graham knows about the spectral method} %Title of paper
 
 % repeat the \author .. \affiliation  etc. as needed
 % \email, \thanks, \homepage, \altaffiliation all apply to the current author.
@@ -43,8 +47,6 @@
 %\thanks{}
 %\altaffiliation{}
 
-\author{J.J. Hope}
-\affiliation{Research School of Physics and Engineering, Australian National University, ACT 0200, Australia}
 
 % Collaboration name, if desired (requires use of superscriptaddress option in \documentclass). 
 % \noaffiliation is required (may also be used with the \author command).
@@ -55,7 +57,7 @@
 
 \begin{abstract}
 % insert abstract here
-We derive a quasi-discrete Hankel transform (QDHT) appropriate for problems with Neumann boundary conditions.  Our method applies the ideas of \citet{Yu:1998} and \citet{Guizar-Sicairos:2004} which derive the QDHT assuming Dirichlet boundary conditions.
+This is a set of notes describing what Graham knows about the pseudo-spectral method.  I use this to obtain an approximate discrete Hankel transform appropriate for problems with Neumann boundary conditions.
 
 \end{abstract}
 
@@ -68,17 +70,108 @@ We derive a quasi-discrete Hankel transform (QDHT) appropriate for problems with
 \section{Introduction}
 \label{sec:Introduction}
 
-NOTE: This paper is basically redundant due to \citet{Kai-Ming:2009}.
+In the spectral method, the idea is to approximate the exact solution $u(x)$ as a sum of $N$ orthonormal basis functions $\phi_i(x)$:
+\begin{align}
+  u(x) &\approx u_N(x) = \sum_i u_i \phi_i(x), \label{eq:BasisFunctionExpansion}
+\end{align}
+where $u_i$ are the expansion coefficients.  Often we need more than just the coefficients $\{u_i\}$, we also need the solution at the grid points.  Typically this is because we need to compute terms like $V(x) u(x)$ or $u(x)^2$.  We can always interpolate the solution onto a given set of coordinate points $\{x_i\}$ by using the expansion \eqref{eq:BasisFunctionExpansion}.  So in principle, we can choose the $\{x_i\}$ by any process and interpolate to compute $u_N(x_i)$.  The expression $V(x) u(x)$ can then be computed straight-forwardly at the grid points $x_i$.  If this term contributes to the evolution of $u(x)$, we now need the basis decomposition of $V(x) u(x)$, i.e.\ we need to invert our interpolation.  Now if $V(x) u(x)$ can be represented exactly in terms of the $N$ basis functions $\phi_i(x)$, then we can just invert our interpolation matrix to determine the basis function decomposition of $V(x) u(x)$.  Interpolation can be considered to be the application of the matrix $T_{ij}$ to the vector $u_j$:
+\begin{align}
+  u(x_i) &= \sum_j T_{ij} u_j,
+\end{align}
+where $T_{ij} = \phi_j(x_i)$.  This matrix can be inverted to find the $u_j$ from $u(x_i)$:
+\begin{align}
+  u_j &= \left(T^{-1}\right)_{ji} u(x_i).
+\end{align}
 
-History: The first record of the idea of the quasi-discrete Hankel transform (QDHT) I can find is \citet{Johnson:1987}, where he focussed exclusively on the Dirichlet boundary conditions.  \citet{Lemoine:1994} appears to have independently derived the QDHT, and briefly discusses a transform and its inverse with Neumann boundary conditions, mostly in response to the announcement of the work of \citet{Stade:1995}.  \citet{Stade:1995} focus on the Dirichlet/Neumann pair.  \citet{Yu:1998} seems to have independently derived the QDHT again as there is no citation for anything preceding it.  \citet{Yu:1998} considered the $m=0$ order case only, and that was generalized by \citet{Guizar-Sicairos:2004}, but that case had already been solved by \citet{Johnson:1987,Lemoine:1994}.  
+However, in general $V(x) u(x)$ will be outside the span of the \emph{finite} set of basis functions $\{\phi_i(x)\}$.  In this case, applying the above procedure can lead to disastrous results.  For example, if $V(x) u(x)$ is a normalised basis function \emph{outside} the basis set $\{\phi_i(x)\}$ (i.e.\ we assume that the finite set $\{\phi_i(x)\}_{i=1}^N$ is the first $N$ terms of the complete, orthonormal set $\{\phi_i(x)\}_{i=1}^\infty$), then we can find that the $\sum_{i=1}^N \abs{u_i}^2$ can be much greater than 1.  We want $\sum_{i=1}^N \abs{u_i}^2 = \mathcal{O}(1)$ so that small amplitudes of higher-order basis functions don't pollute the other basis coefficients.
 
-The QDHT is not the only formulation of a discrete Hankel transform.  There are a number (see \citep{Yu:1998} for a list) of others, some of which use the DFT, but they all suffer problems with accuracy and stability.  Yu's formulation is slower ($O(N^2)$ time) than some of these `fast' Hankel transforms which can be performed in $O(N \log N)$ time, but the stability of the method is critical to applications where the DHT must be applied repeatedly, such as solving PDEs using spectral methods.
+An alternative procedure would be to compute the basis coefficients of an arbitrary function $f(x)$ by exploiting the orthonormality of the basis functions:
+\begin{align}
+  f_i &= \int_a^b w(x) f(x) \phi_i(x)\, dx,
+\end{align}
+where $w(x)$ is a non-negative weight function (which is problem-dependent), and the $f_i$ are the basis coefficients.  This procedure will work well, but these integrals may not have analytic solutions, or $u(x)$ itself may not be known, we may only know $\{u(x_i)\}$.  In this case, we need to approximate the integral, for which we will use a quadrature formula of the form:
+\begin{align}
+  \int_a^b w(x) f(x) \, dx \approx \sum_{i=1}^N w_i f(x_i),
+\end{align}
+where the $\{w_i\}$ and $\{x_i\}$ are the weights and abscissas of the quadrature formula.  For a quadrature formula to be useful, we have the restrictions $w_i \ge 0$ and $x_i \in [a, b]$.
 
-Other potentially relevant literature: \citet{Ronen:2006} applied the idea to Bogoliubov modes in a cylindrical trap which was how I found out about this, the method is widely applied in the optics literature (see the many citations of \citet{Guizar-Sicairos:2004}) where I fear the Dirichlet boundary condition is more useful.
+How should we choose the $w_i$ and $x_i$ in general?  Ideally we'd like our quadrature formula to preserve the orthonormality of our basis functions,
+\begin{align}
+  \int_a^b w(x) \phi_i(x) \phi_j(x)\, dx &\approx \sum_p w_p \phi_i(x_p) \phi_j(x_p) = \delta_{ij}, \label{eq:DiscreteOrthonormality}
+\end{align}
+where $\delta_{ij}$ is the Kronecker delta.  If we have $N$ basis functions and we (perhaps arbitrarily) decide to limit ourselves to $N$ abscissas $x_i$, we only have $2N$ degrees of freedom: $N$ weights $w_i$ and $N$ abscissas $x_i$.  But we have $1/2 (N^2 + N)$ orthonormality constraints to enforce (Equation~\eqref{eq:DiscreteOrthonormality} has $N^2$ terms, but the equation is symmetric exchanging $i$ and $j$).
 
-I haven't found anything particularly interesting in more recent literature, but I should probably read \citet{Cerjan:2007} before we publish to work out if it should be cited.
+In some situations, $\phi_i(x) \phi_j(x)$ can be expressed as a \emph{finite} sum of basis functions of order no higher than $2N$, in which case, choosing our $2N$ degrees of freedom to exactly integrate the first $2N$ basis functions ensures that the quadrature integrals of every pair of basis functions $f_i(x) f_j(x)$ are equal to their exact integrals.  This situation occurs when the $\phi_i(x)$ are polynomials with highest degree $i-1$ (any set of orthogonal polynomials satisfies this).  This situation also occurs for trigonometric series, for example $\cos(n \pi x) \cos(m \pi x)$ can be expressed in terms of $\cos[(m-n)\pi x]$ and $\cos[(m+n)\pi x]$.
 
-Of course we should cite the XMDS paper \citep{Dennis:2013}.
+Unfortunately, this is not always the case, a good example are the Bessel functions.  In this case our basis functions are $J_m(k_i x)$, but products of basis functions cannot be expressed as a \emph{finite} sum of other basis functions, i.e.\ $J_m(k_i x) J_m(k_j x)$ cannot be expressed as a finite sum of $J_m(k_i x)$.  In this case, we just need to do the best we can with our $2N$ degrees of freedom (or increase the number of abscissas $x_i$).  What we want is for the orthonormality matrix \eqref{eq:DiscreteOrthonormality} to be as close to the identity as possible.  To quantity this, we need an error norm.
+
+Intuitively, we want all the eigenvalues of the orthonormality matrix to be as close to 1 as possible to ensure long-term stability of the solution after repeated application of interpolation and quadrature integration operations.  More specifically, we want the eigenvalues of the error matrix
+\begin{align}
+  \Delta_{ij} &= \sum_p w_p \phi_i(x_p) \phi_j(x_p) - \delta_{ij}
+\end{align}
+to have eigenvalues as small as possible.  We want to minimise something like:
+\begin{align}
+  E_1(\{w_p\}, \{x_p\}) &= \sum_i \abs{\lambda_i}^2.
+\end{align}
+It turns out that this is the Schatten $p$-norm of $\Delta_{ij}$ with $p=1$.  This is not particularly convenient because to efficiently minimise any error norm we will need to be able to compute its derivatives with respect to the weights $\{w_p\}$ and abscissas $\{x_p\}$, and computing the derivatives of the eigenvalues with respect to the entries of the matrix is troublesome and can be numerically unstable.  A numerically more convenient norm is the $p=2$ Schatten $p$-norm, which is also the Frobenius norm:
+\begin{align}
+  E_2(\{w_p\}, \{x_p\}) &= \sqrt{ \sum_i \abs{\lambda_i}^4} = \sqrt{\sum_{ij} \abs{\Delta_{ij}}^2}.
+\end{align}
+The latter expression is simple to evaluate \emph{and} simple to find an expression for the derivatives of the error.  The python code \verb+playground.py+ uses the square of this error norm because it simplifies the expressions for the derivatives.
+
+Often the discrete basis function decomposition is related to an integral transform (e.g.\ the Fourier transform, Hankel transform, etc.).  In this case, we would like to have results like Parseval's theorem for our discretised transforms.  For example, if $\alpha_i \phi_i(x) =  \psi_{k_i}(x)$ for some $k_i$ and where $\alpha_i$ is a positive real normalisation constant, we may have the integral transform
+\begin{align}
+  \tilde{f}(k) &= \int w(x) f(x) \psi^*_k(x)\, dx, \label{eq:IntegralTransform}
+\end{align}
+for which we would like to preserve a result like Parseval's theorem\footnote{Parseval's theorem reduces to Plancheral's theorem $\int w(x) |f(x)|^2\, dx = \int w(k) |\tilde{f}(k)|^2\, dk$ for $g(x)$ equal to $f(x)$.}, i.e.
+\begin{align}
+  \int w(x) f^*(x) g(x)\, dx &= \int \tilde{w}(k) \tilde{f}^*(k) \tilde{g}(k)\, dk.
+\end{align}
+
+From equation~\eqref{eq:IntegralTransform}, we can relate $\tilde{f}(k)$ to the basis coefficients $f_i$,
+\begin{align}
+  \tilde{f}(k_i) &= \int w(x) \sum_j f_j \phi_j(x) \psi_{k_i}^*(x) \, dx \\
+  &= \int w(x) \sum_j f_j \phi_j \alpha_i \phi_i^*(x)\, dx = \alpha_i f_i.
+\end{align}
+Note that no approximations have been made at this point (although we have assumed we know the basis expansion $\{f_i\}$ of $f(x)$).  Computing the left hand side of Parseval's theorem gives
+\begin{align}
+  \int w(x) f^*(x) g(x)\, dx &= \int w(x) \sum_{ij} f_i^* g_j \phi_i^*(x) \phi_j(x)\, dx\\
+   &= \sum_i f_i^* g_i = \sum_i \frac{1}{\alpha_i^2} \tilde{f}^*(k_i) \tilde{g}(k_i).
+\end{align}
+Thus if we use the quadrature formula
+\begin{align}
+  \int \tilde{w}(k) \tilde{f}(k) \, dk &\equiv \sum_i \frac{1}{\alpha_i^2} \tilde{f}(k_i),
+\end{align}
+to evaluate the integral on the right-hand side of Parseval's theorem, then Parseval's theorem will apply to our discrete transform.  Although no approximations have been made in `proving' Parseval's theorem for the discretised integral transform, performing the integral on the left-hand side of Parseval's theorem will in practice be done by means of the quadrature integral
+\begin{align}
+  \int w(x) f^*(x) g(x)\, dx &\approx \sum_i w_i f^*(x_i) g(x_i),
+\end{align}
+and so the degree to which Parseval's theorem will hold will be determined by the quality of the quadrature integral, and hence by the magnitude of the error norm mentioned earlier, which we wish to minimise.
+
+\section{Statement of the method}
+
+Consider the general case of $\Nbasis$ (possibly complex) basis functions $\{\phi_i(x)\}_{i=1}^{\Nbasis}$ (which are the first $\Nbasis$ elements of the complete, orthonormal set $\{\phi_i(x)\}_{i=1}^{\infty}$) and $\Nx$ spatial points in our grid.  In this case we want to minimise the error norm
+\begin{align}
+  R &= E_2^2\left(\{w_p\}, \{x_p\}\right) = \sum_{ij} \abs{\Delta_{ij}}^2,
+\end{align}
+where
+\begin{align}
+  \Delta_{ij} &= \sum_{p} w_p \phi_i^*(x_p) \phi_j(x_p) - \delta_{ij},
+\end{align}
+is the error matrix.  The derivatives of $R$ with respect to the weights and abscissas are
+\begin{align}
+  \frac{dR}{dw_p} &= 2 \sum_{ij}\Real\left\{\Delta_{ij}^* \phi_i^*(x_p) \phi_j(x_p)\right\}, \label{eq:ErrorWeightDerivative}\\
+  \frac{dR}{dx_p} &= 2 \sum_{ij}\Real\left\{\Delta_{ij}^* w_p \left[{\phi_i'}^*(x_p) \phi_j(x_p) + \phi_i^*(x_p) \phi_j'(x_p)\right] \right\} \notag\\
+   &= 4 \sum_{ij}\Real\left\{\Delta_{ij}^* w_p \phi_i^*(x_p) \phi_j'(x_p)\right\}. \label{eq:ErrorAbscissaDerivative}
+\end{align}
+
+Given $\Nbasis$ basis functions (and their derivatives) and an initial guess for the $\Nx$ weights $\{w_p\}$ and $\Nx$ abscissas $\{x_p\}$ we can now efficiently minimise $R$ numerically using the derivatives given by Eqs.~\eqref{eq:ErrorWeightDerivative} and \eqref{eq:ErrorAbscissaDerivative}.  This minimisation procedure is implemented in \verb+playground.py+.
+
+In practice, we may choose $\Nx$ given $\Nbasis$ (or \emph{vice versa}) to ensure that the minimum value of $R$ is sufficiently small.
+
+We want to apply this method to the Hankel transform, for which no quadrature formula with $\Nx < \frac{1}{4}(\Nbasis^2 + \Nbasis)$ spatial grid points can be exact.  Ideally we would like $\Nx \sim \mathcal{O}(\Nbasis)$.
+
+\section{The Hankel transform}
 
 One of the useful properties of the Hankel transform is that it provides accurate computation of the Laplacian for problems with radial symmetry:
 \begin{align}
@@ -86,13 +179,83 @@ One of the useful properties of the Hankel transform is that it provides accurat
 \end{align}
 where the $m$-order Hankel transform and its inverse are defined by
 \begin{align}
-  \mathcal{H}_m[f](k) &= \tilde{f}(k) = \int_0^{\infty} r f(r) J_m(k r) \, dr \\
-  \mathcal{H}^{-1}_m[\tilde{f}](r) &= f(r) = \int_0^{\infty} k \tilde{f}(k) J_m(k r)\, dk,
+  \mathcal{H}_m[f](k) &= \tilde{f}(k) = \int_0^{\infty} r f(r) J_m(k r) \, dr \label{eq:HankelTransform}\\
+  \mathcal{H}^{-1}_m[\tilde{f}](r) &= f(r) = \int_0^{\infty} k \tilde{f}(k) J_m(k r)\, dk, \label{eq:InverseHankelTransform} 
 \end{align}
 where $J_m(r)$ is the Bessel function of the first kind of order $m$. Or improve the notation as appropriate.  I've never actually seen the $\mathcal{H}_m$, $\mathcal{H}^{-1}_m$ notation used anywhere.
 
-\section{Derivation of the method}
-\label{sec:Derivation}
+The motivation of the discrete Hankel transform is to get a similar property on finite domains.  If we expand our function $f(r)$ in terms of a series of Bessel functions
+\begin{align}
+  f(r) &= \sum_i \frac{f_i}{\alpha_i} J_m(k_i r), \label{eq:DiniSeries}
+\end{align}
+where the $\alpha_i$ are positive real normalisation constants defined by
+\begin{align}
+  \int_0^R r J_m^2(k_i r)\, dr &= \alpha_i^2,
+\end{align}
+then the Laplacian is easy to calculate
+\begin{align}
+  \nabla^2\left[f(r) e^{i m \theta}\right] &= \sum_i \frac{f_i}{\alpha_i} \nabla^2\left[J_m(k_i r) e^{i m \theta}\right] \\
+  &= \sum_i - k_i^2 \frac{f_i}{\alpha_i} J_m(k_i r) e^{i m \theta}.
+\end{align}
+Note that the $k_i$ are chosen such that $f(r)$ satisfies an homogenous boundary condition at $r=R$, i.e.\ a boundary condition of the form $a f(R) + b f'(R) = 0$.  This ensures that the basis functions are complete and orthogonal (Eq.~\eqref{eq:DiniSeries} is a Dini series\citep{Watson:1966}).
+
+The coefficients $f_i$ can be determined from $f(r)$ by performing the Hankel transform, Eq.~\eqref{eq:HankelTransform}.  However, that requires an integral over the infinite domain $[0, \infty)$, which is problematic as we want to deal with the finite domain $[0, R)$.  To solve this, we can define the function $f_R(r) \equiv f(r) \Pi_R(r)$, where $\Pi_R(r)$ is the top-hat function which is 1 for $r < R$ and zero for $r > R$.  The Hankel transform of $f_R(r)$ can be conveniently be computed in terms of an integral over the finite domain $[0, R)$,
+\begin{align}
+  \tilde{f}_R(k) &= \int_0^\infty r f_R(r) J_m(k r)\, dr = \int_0^R r f(r) J_m(k r)\, dr.
+\end{align}
+The $f_i$ can be obtained from $\tilde{f}_R(k)$ using
+\begin{align}
+  \tilde{f}_R(k_i) &= \int_0^R r \sum_j \frac{f_j}{\alpha_j} J_m(k_j r) J_m(k_i r)\, dr = \alpha_i f_i,
+\end{align}
+where we have used the orthogonality of the $J_m(k_i r)$.
+
+On the restricted domain $[0, R)$ we thus have the \emph{exact} Hankel transform pair
+\begin{align}
+  \tilde{f}_R(k_i) &= \int_0^R r f(r) J_m(k_i r)\, dr, \label{eq:FiniteHankelTransform}\\
+  f(r) &= \sum_i \frac{1}{\alpha_i^2} \tilde{f}_R(k_i) J_m(k_i r). \label{eq:FiniteInverseHankelTransform}
+\end{align}
+In order to work with this transform pair computationally, we need to approximate the integral in Eq.~\eqref{eq:FiniteHankelTransform} with a quadrature formula.  Once we do this, we have the discrete Hankel transform (or quasi-discrete Hankel transform).
+
+\subsection{(Quasi-)discrete Hankel transform}
+
+Most derivations of the quasi-discrete Hankel transform start with the continuous Hankel transform pair Eqs.~\eqref{eq:HankelTransform} and \eqref{eq:InverseHankelTransform}, and then assume \emph{a priori} that the function $f(r)$ is non-zero only in the region $[0, R)$, and the corresponding $\tilde{f}(k)$ is non-zero only in the region $[0, K)$ for some constant $K$.  It is not usually stated as such, but this is an \emph{approximation}.  Any function (apart from the zero function) which is zero over the domain $[0, R)$ will have a transform $\tilde{f}(k)$ which is non-zero for arbitrarily large $k$ (but it does decay).
+
+Our derivation will begin with the exact `restricted' Hankel transform pair, Eqs.~\eqref{eq:FiniteHankelTransform} and \eqref{eq:FiniteInverseHankelTransform}.  
+
+
+
+We are motivated by the symmetry of the continuous Hankel transform pair.. a relevant paper at this point is \citet{Rawn:1989}.
+
+In that pair, the $k_i$ were chosen so that $f(r)$ satisfied an homogenous boundary condition at $r=R$.
+
+\subsection{History of the discrete Hankel transform}
+
+The first record of the idea of the quasi-discrete Hankel transform (QDHT) seems to be \citet{Johnson:1987}, where he focussed exclusively on the Dirichlet boundary conditions.  \citet{Lemoine:1994} appears to have independently rederived it, and briefly discusses a transform with Neumann boundary conditions, mostly in response to the announcement of the work of \citet{Stade:1995}.  \citet{Stade:1995} focus on a transform with Neumann boundary conditions in coordinate space and Dirichlet boundary conditions in k-space (FIXME: verify this).  \citet{Yu:1998} seems to have independently derived the QDHT again as there is no citation for anything preceding it.  \citet{Yu:1998} considered the $m=0$ order case only, and that was generalized by \citet{Guizar-Sicairos:2004}, but that case had already been solved by \citet{Johnson:1987,Lemoine:1994}.  More recently, \citet{Kai-Ming:2009} have derived a transform assuming Neumann boundary conditions in both coordinate space and k-space.
+
+Note most of the above methods derive transforms which have an undetermined quantity $S$, which is variously chosen to make the determinant of the (normalised) transform matrix unity, or to make the $\phi_{N+1}(x)$ basis function (the first basis function outside the finite basis set) be orthogonal with the first $N$ functions (according to the quadrature formula).
+
+For the case of the Dirichlet boundary conditions there exists an analytic expression which is a good choice for $S$, in that it appears to be very close to optimal. Specifically the error norm described in section~\ref{sec:Introduction} is basically minimised as a function of $S$, and perturbing the $\{w_i\}$ and $\{x_i\}$ from this quadrature appears to yield very little benefit.
+
+On the other hand, the existing schemes for Hankel transforms with Neumann boundary conditions have significantly larger errors which will be noticeable if you apply the transform and its inverse many times.  Using the scheme sketched in the previous section yields significant improvement over previous proposals.  Importantly, the optimisation can be performed relatively quickly on modern hardware.  For an $N=100$ quasi-discrete Hankel transform, the quadrature formula can be optimised in $\sim 75\text{s}$.  Importantly, the results of this optimisation procedure can be saved and re-used for subsequent simulations.
+
+The methods presented here can be applied to the Dirichlet case, but with little benefit.  I don't understand why this is, but as we are able to substantially improve the Neumann case, that may be enough.
+
+
+\begin{widetext}
+\section{Application of the method to the Hankel transform}
+\label{sec:HankelApplication}
+We want to solve a problem on a circular domain with symmetry.  We have some homogenous boundary condition at $r=R$ that our solution must satisfy (e.g.\ $u(R) = 0$, $u'(R) = 0$, or in general $a u(R) + b u'(R) = 0$).  We therefore want to expand our solution in terms of Bessel functions that satisfy this boundary condition:
+\begin{align}
+  u_N(r) &= \sum_{i=1}^N u_i \alpha_i J_m(k_i r),
+\end{align}
+where the $k_i$ are the first $N$ roots of $a J_m(k_i R) + b k_i J_m'(k_i R) = 0$, the $u_i$ are the basis function coefficients, and the $\alpha_i$ are normalisation coefficients chosen such that the basis functions $\alpha_i J_m(k_i r)$ are normalised:
+\begin{align}
+  \int_0^R \alpha_i^2 J_m(k_i r) r\, dr &= \frac{R^2}{2}\left[\left(1 - \frac{m^2}{k_i^2 R^2}\right) J_m^2(k R) + {J_m'}^2(k R)\right] = 1,\\
+  \implies \alpha_i &= \frac{1}{R} \sqrt{\frac{2}{\left(1 - \frac{m^2}{k_i^2 R^2}\right) J_m^2(k R) + {J_m'}^2(k R)}}. \label{eq:BesselNormalisation}
+\end{align}
+Equation~\eqref{eq:BesselNormalisation} can be simplified in the common cases of Dirichlet ($u(R) = 0$) or Neumann ($u'(R) = 0$) boundary conditions.
+\end{widetext}
+
 
 The definitions of the Hankel transform and its inverse are
 \begin{align}
@@ -104,7 +267,7 @@ The Hankel transform is an orthogonal function decomposition which transforms a 
   \int_0^\infty r J_m(k r) J_m(k' r) \,dr &= \frac{\delta(k - k')}{k}.
 \end{align}
 
-Our goal is to derive a similar orthogonal function decomposition over the finite spatial domain $0 \leq r \leq R$ and the corresponding wavenumber domain $0 \leq k \leq K$.  The quasi-discrete Hankel transform and its inverse the quasi-discrete inverse Hankel transform (QDIHT) satisfy
+Our goal is to derive a similar orthogonal function decomposition over the finite spatial domain $0 \leq r \leq R$.  The quasi-discrete Hankel transform and its inverse the quasi-discrete inverse Hankel transform (QDIHT) satisfy
 \begin{align}
   \tilde{f}(k) &= \int_0^R r f(r) J_{m}(k r)\, dr,  \label{eq:QDHT} \\
   f(r) &= \int_0^K k \tilde{f}(k) J_{m}(k r)\, dk,  \label{eq:QDIHT}
