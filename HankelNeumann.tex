@@ -18,8 +18,8 @@
 
 \newcommand{\relphantom}[1]{\phantom{\mathrel{#1}}}
 \newcommand{\abs}[1]{\left|#1\right|}
-\newcommand{\Nbasis}{N_{\text{basis}}}
-\newcommand{\Nx}{N_{x}}
+\newcommand{\Nbasis}{{N_{\text{basis}}}}
+\newcommand{\Nx}{{N_{x}}}
 \DeclareMathOperator{\Real}{Re}
 \DeclareMathOperator{\Imag}{Im}
 
@@ -149,25 +149,26 @@ to evaluate the integral on the right-hand side of Parseval's theorem, then Pars
 and so the degree to which Parseval's theorem will hold will be determined by the quality of the quadrature integral, and hence by the magnitude of the error norm mentioned earlier, which we wish to minimise.
 
 \section{Statement of the method}
+\label{sec:Method}
 
 Consider the general case of $\Nbasis$ (possibly complex) basis functions $\{\phi_i(x)\}_{i=1}^{\Nbasis}$ (which are the first $\Nbasis$ elements of the complete, orthonormal set $\{\phi_i(x)\}_{i=1}^{\infty}$) and $\Nx$ spatial points in our grid.  In this case we want to minimise the error norm
 \begin{align}
-  R &= E_2^2\left(\{w_p\}, \{x_p\}\right) = \sum_{ij} \abs{\Delta_{ij}}^2,
+  \Gamma &= E_2^2\left(\{w_p\}, \{x_p\}\right) = \sum_{ij} \abs{\Delta_{ij}}^2, \label{eq:TransformError}
 \end{align}
 where
 \begin{align}
   \Delta_{ij} &= \sum_{p} w_p \phi_i^*(x_p) \phi_j(x_p) - \delta_{ij},
 \end{align}
-is the error matrix.  The derivatives of $R$ with respect to the weights and abscissas are
+is the error matrix.  The partial derivatives of $\Gamma$ with respect to the weights and abscissas are
 \begin{align}
-  \frac{dR}{dw_p} &= 2 \sum_{ij}\Real\left\{\Delta_{ij}^* \phi_i^*(x_p) \phi_j(x_p)\right\}, \label{eq:ErrorWeightDerivative}\\
-  \frac{dR}{dx_p} &= 2 \sum_{ij}\Real\left\{\Delta_{ij}^* w_p \left[{\phi_i'}^*(x_p) \phi_j(x_p) + \phi_i^*(x_p) \phi_j'(x_p)\right] \right\} \notag\\
+  \frac{\partial \Gamma}{\partial w_p} &= 2 \sum_{ij}\Real\left\{\Delta_{ij}^* \phi_i^*(x_p) \phi_j(x_p)\right\}, \label{eq:ErrorWeightDerivative}\\
+  \frac{\partial \Gamma}{\partial x_p} &= 2 \sum_{ij}\Real\left\{\Delta_{ij}^* w_p \left[{\phi_i'}^*(x_p) \phi_j(x_p) + \phi_i^*(x_p) \phi_j'(x_p)\right] \right\} \notag\\
    &= 4 \sum_{ij}\Real\left\{\Delta_{ij}^* w_p \phi_i^*(x_p) \phi_j'(x_p)\right\}. \label{eq:ErrorAbscissaDerivative}
 \end{align}
 
-Given $\Nbasis$ basis functions (and their derivatives) and an initial guess for the $\Nx$ weights $\{w_p\}$ and $\Nx$ abscissas $\{x_p\}$ we can now efficiently minimise $R$ numerically using the derivatives given by Eqs.~\eqref{eq:ErrorWeightDerivative} and \eqref{eq:ErrorAbscissaDerivative}.  This minimisation procedure is implemented in \verb+playground.py+.
+Given $\Nbasis$ basis functions (and their derivatives) and an initial guess for the $\Nx$ weights $\{w_p\}$ and $\Nx$ abscissas $\{x_p\}$ we can now efficiently minimise $\Gamma$ numerically using the derivatives given by Eqs.~\eqref{eq:ErrorWeightDerivative} and \eqref{eq:ErrorAbscissaDerivative}.  This minimisation procedure is implemented in \verb+playground.py+.
 
-In practice, we may choose $\Nx$ given $\Nbasis$ (or \emph{vice versa}) to ensure that the minimum value of $R$ is sufficiently small.
+In practice, we may choose $\Nx$ given $\Nbasis$ (or \emph{vice versa}) to ensure that the minimum value of $\Gamma$ is sufficiently small.
 
 We want to apply this method to the Hankel transform, for which no quadrature formula with $\Nx < \frac{1}{4}(\Nbasis^2 + \Nbasis)$ spatial grid points can be exact.  Ideally we would like $\Nx \sim \mathcal{O}(\Nbasis)$.
 
@@ -184,13 +185,13 @@ where the $m$-order Hankel transform and its inverse are defined by
 \end{align}
 where $J_m(r)$ is the Bessel function of the first kind of order $m$. Or improve the notation as appropriate.  I've never actually seen the $\mathcal{H}_m$, $\mathcal{H}^{-1}_m$ notation used anywhere.
 
-The motivation of the discrete Hankel transform is to get a similar property on finite domains.  If we expand our function $f(r)$ in terms of a series of Bessel functions
+The motivation of the discrete Hankel transform is to get a similar property on finite domains.  If we expand our function $f(r)$ in terms of a sum of Bessel functions
 \begin{align}
   f(r) &= \sum_i \frac{f_i}{\alpha_i} J_m(k_i r), \label{eq:DiniSeries}
 \end{align}
 where the $\alpha_i$ are positive real normalisation constants defined by
 \begin{align}
-  \int_0^R r J_m^2(k_i r)\, dr &= \alpha_i^2,
+  \int_0^R r J_m^2(k_i r)\, dr &= \alpha_i^2, \label{eq:AlphaNormalisation}
 \end{align}
 then the Laplacian is easy to calculate
 \begin{align}
@@ -220,17 +221,91 @@ In order to work with this transform pair computationally, we need to approximat
 
 Most derivations of the quasi-discrete Hankel transform start with the continuous Hankel transform pair Eqs.~\eqref{eq:HankelTransform} and \eqref{eq:InverseHankelTransform}, and then assume \emph{a priori} that the function $f(r)$ is non-zero only in the region $[0, R)$, and the corresponding $\tilde{f}(k)$ is non-zero only in the region $[0, K)$ for some constant $K$.  It is not usually stated as such, but this is an \emph{approximation}.  Any function (apart from the zero function) which is zero over the domain $[0, R)$ will have a transform $\tilde{f}(k)$ which is non-zero for arbitrarily large $k$ (but it does decay).
 
-Our derivation will begin with the exact `restricted' Hankel transform pair, Eqs.~\eqref{eq:FiniteHankelTransform} and \eqref{eq:FiniteInverseHankelTransform}.  
+Our derivation will begin with the exact `restricted' Hankel transform pair, Eqs.~\eqref{eq:FiniteHankelTransform} and \eqref{eq:FiniteInverseHankelTransform}.  Although $\tilde{f}_R(k)$ is only evaluated at the $k_i$ in \eqref{eq:FiniteInverseHankelTransform}, it is defined for all $k$,
+\begin{align}
+  \tilde{f}_R(k) &= \sum_i \tilde{f}_R(k_i) C(k; k_i),
+\end{align}
+where $C(k; k_i)$ is defined by
+\begin{multline}
+C(k; k_i) = \frac{1}{\alpha_i^2}\frac{R}{k_i^2 - k^2} \Big[k J_m(k_i R) J_m'(k R) \\ - k_i J_m(k R) J_m'(k_i R) \Big], \label{eq:CardinalFunction}
+\end{multline}
+which is a `cardinal' function (see \citet{Whittaker:1914}; \citet[Chapter 5]{SpectralMethods}; or in the context of Bessel functions, \citet{Rawn:1989}) which satisfies
+\begin{align}
+  C(k_j; k_i) &= \delta_{ij}.
+\end{align}
+In other words, $C(k; k_i)$ takes the value 1 at $k=k_i$, and is zero for $k = k_j$ for $i \neq j$.  A relevant property of the $C(k; k_i)$ functions is that they are largest when $k$ is close to $k_i$, but decay as $k$ grows large, see Figure~\ref{fig:CardinalFunctions}.
 
+\begin{figure}
+\includegraphics[width=8cm]{First10DirichletCardinalFunctions}
+\includegraphics[width=8cm]{First10NeumannCardinalFunctions}
+\includegraphics[width=8cm]{First10DirichletCardinalFunctionsScaling}
+\includegraphics[width=8cm]{CardinalFunctionDirichletVsNeumannScaling}
+\caption{(a) First 10 Cardinal functions for Dirichlet boundary conditions ($f(R) = 0 \implies J_m(k_i R) = 0$); (b) First 10 Cardinal functions for Neumann boundary conditions ($f'(R) = 0 \implies J_m'(k_i R) = 0$); (c) Asymptotic scaling of the first 10 Cardinal functions for Dirichlet boundary conditions and a comparison to the asymptotic $k^{-5/2}$ scaling; (d) Comparison of the asymptotic scaling of the first Cardinal functions for Dirichlet (reddish) and Neumann (blue) boundary conditions comparing the $k^{-5/2}$ and $k^{-3/2}$ scaling respectively.\label{fig:CardinalFunctions}}
+\end{figure}
 
+To fully discretise the `restricted' transform, Eqs.~\eqref{eq:FiniteHankelTransform} and \eqref{eq:FiniteInverseHankelTransform}, we must choose a quadrature formula to evaluate the integral in Eq.~\eqref{eq:FiniteHankelTransform}.  In this, we are motivated by the identity
+\begin{align}
+  f(r) &= \int_0^\infty k \tilde{f}_R(k) J_m(k r)\, dk = \sum_i \frac{1}{\alpha_i^2} \tilde{f}_R(k_i)J_m(k_i r),
+\end{align}
+which is true for $r \in [0, R)$.  A similar identity can be obtained for integrals over $r$:
+\begin{align}
+  \int_0^\infty r g_K(r) J_m(k r)\, dr &= \sum_i \frac{1}{\beta_i^2} g_K(r_i) J_m(k r_i), \label{eq:CoordinateIntegral}
+\end{align}
+where $\tilde{g}(k)$ is defined by
+\begin{align}
+  \tilde{g}(k) &= \sum_i \frac{\tilde{g}_i}{\beta_i} J_m(k r_i), \label{eq:DiniSeriesInK}
+\end{align}
+the function $\tilde{g}_K(k)$ is defined similarly to $f_R(r)$ as $\tilde{g}_K(k) = g(k) \Pi_K(k)$, which is zero for $k > K$, and the $r_i$ are chosen so that $g(k)$ satisfies an homogenous boundary condition at $k=K$.  
 
-We are motivated by the symmetry of the continuous Hankel transform pair.. a relevant paper at this point is \citet{Rawn:1989}.
+The identity Eq.~\eqref{eq:CoordinateIntegral} applies to integrals over the range $(0, \infty)$, however we need an approximation for integrals over the range $(0, R)$.  If we replace $g_K(r)$ with $f_R(r)$, then we would obtain
+\begin{align}
+  \int_0^R r f_R(r) J_m(k r)\, dr &\approx \sum_i \frac{1}{\beta_i^2} f_R(r_i) J_m(k r_i),  \label{eq:ApproximateQuadrature}
+\end{align}
+which is a quadrature approximation of the form we desire, however, the identity Eq.~\eqref{eq:CoordinateIntegral} is only valid for functions which have a Hankel transform that is zero for $k > K$, and this is not exactly true for $f_R(r)$.  The cardinal functions $C(k; k_i)$ that comprise $\tilde{f}_R(k)$ are not zero above some $K$, however they do decay (see Figure~\ref{fig:CardinalFunctions}) for $k > k_i$.  Thus the quadrature rule \eqref{eq:ApproximateQuadrature} is approximate and its error will be determined by the asymptotic scaling of the cardinal functions as $k\rightarrow\infty$ (this error is analysed in detail in Section~\ref{sec:ErrorAnalysis}).  In the case of Dirichlet boundary conditions for $f(r)$ (i.e.\ $f(R) = 0$), the first term in brackets in Eq.~\eqref{eq:CardinalFunction} is zero (as $J_m(k_i R) = 0$), and the cardinal functions scale asymptotically as $k^{-5/2}$.  For all other boundary conditions, the first term in Eq.~\eqref{eq:CardinalFunction} will be non-zero and will dominate the asymptotic scaling, and the cardinal functions will decay as $k^{-3/2}$ (see Figure~\ref{fig:CardinalFunctions}).  
 
-In that pair, the $k_i$ were chosen so that $f(r)$ satisfied an homogenous boundary condition at $r=R$.
+The fundamental reason for the different asymptotic scalings of $\tilde{f}_R(k)$ for different boundary conditions is that $f_R(r)$ has a discontinuous derivative at $r=R$ if it obeys Dirichlet boundary conditions, however for all other boundary conditions $f_R(r)$ itself is discontinuous at $r=R$.  For Fourier transforms, if a function is continuous and its first $k$ derivatives are continuous, then the Fourier series coefficients will decay as $a_n \sim O(n^{-k})$.  A similar property will likely hold for the Hankel transform, and the cardinal functions are Hankel transforms of Bessel functions multiplied by the top-hat function\footnote{This paragraph makes no sense, does it?}.  If the Bessel functions obey Dirichlet boundary conditions at $r=R$, then only the derivative of the function will be discontinuous, however if other homogenous boundary conditions are instead satisfied, then the function itself will be discontinuous and we may expect its Hankel transform to decay more slowly.
+
+Now that we have chosen the quadrature formula, Eq.~\eqref{eq:ApproximateQuadrature}, to approximate the integral in Eq.~\eqref{eq:FiniteHankelTransform}, all that remains is to choose $K$ and a boundary condition for $\tilde{g}(k)$ at $k=K$ to determine the abscissas $r_i$.  Given that $\tilde{g}(k)$ is an approximation to $\tilde{f}_R(k)$, which is a weighted sum of cardinal functions $C(k; k_i)$ which are zero for $k=k_j$ where $i \neq j$, a good choice for $K$ and the boundary condition is $\tilde{g}(K)=0$ for some $K=k_{N_K}$ (other choices are possible, for example the Neumann boundary condition $\tilde{g}'(K)= 0$ was considered by \citep{Kai-Ming:2009}, however as we show in Section~\ref{sec:ErrorAnalysis}, this choice has a higher error than the Dirichlet condition described here).  The integer $N_K$ must be greater than $\Nbasis$ to ensure that all of the $\Nbasis$ cardinal functions are zero at $k=K$, and it must also be greater than $\Nx$ to ensure that all of the $r_i$ are less than $R$.  Thus a good choice for $N_K$ is $N_K = \max(\Nbasis,\Nx)+1$.  Typically $\Nx \ge \Nbasis$, and in this case $N_K = \Nx+1$.
+
+We are now in a position to give the general form of the approximate discrete Hankel transform pair
+\begin{align}
+  \tilde{f}_R(k_i) &\approx \sum_{j=1}^{\Nx} \frac{1}{\beta_j^2} f_R(r_j) J_m(k_i r_j), \label{eq:GeneralDiscreteHankelTransform}\\
+  f_R(r_i) &\approx \sum_{j=1}^{\Nbasis} \frac{1}{\alpha_j^2} \tilde{f}_R(k_j) J_m(k_j r_i), \label{eq:GeneralDiscreteInverseHankelTransform}\\
+  \intertext{where}
+  \alpha_i^2 &= \frac{R^2}{2} \left[\left(1 - \frac{m^2}{k_i^2 R^2}\right) J_m^2(k_i R) + J_m'^2(k_i R)\right], \label{eq:GeneralAlpha}\\
+  \beta_i^2 &= \frac{K^2}{2} \left[\left(1 - \frac{m^2}{K^2 r_i^2}\right) J_m^2(K r_i) + J_m'^2(K r_i)\right], \label{eq:GeneralBeta}
+\end{align}
+where the $k_i$ are the first $\Nbasis$ roots of $a J_m(k_i R) + b k_i J_m'(k_i R) = 0$, and the $r_i$ are the first $\Nx$ roots of $c J_m(K r_i) + d r_i J_m(K r_i) = 0$, for some $a$, $b$, $c$, $d$, which define the homogenous boundary conditions obeyed by $f(r)$ at $r=R$ and $\tilde{f}(k)$ at $k = K$ respectively.  We give explicit expressions for two most common cases of Dirichlet boundary conditions for both $f(r)$ and $\tilde{f}(k)$ and Neumann boundary conditions for $f(r)$ and Dirichlet conditions for $\tilde{f}(k)$ (as in the case of a problem requiring Neumann conditions at $r=R$, but not specifying boundary conditions for $\tilde{f}(k)$, Dirichlet conditions will give an approximate transform with a lower error).
+
+\subsubsection{Example 1: $f(R)=0$ and $\tilde{f}(K)=0$}
+\label{sec:BoundaryConditionsDirichletDirichlet}
+
+\begin{align}
+  \tilde{f}_R(k_p) &\approx \frac{2 R^2}{S^2} \sum_{q=1}^{\Nx} \frac{1}{J_{m+1}^2(j_{m,q})} f_R(r_q) J_m\left(\frac{j_{m,p} j_{m,q}}{S}\right),\\
+  f_R(r_p) &\approx \frac{2}{R^2} \sum_{q=1}^{\Nbasis} \frac{1}{J_{m+1}^2(j_{m,q})} \tilde{f}_R(k_q) J_m\left(\frac{j_{m,p} j_{m,q}}{S}\right),
+\end{align}
+where $k_i = j_{m,i}/R$, $r_i = R j_{m,i}/S$, $K = S/R$, and $S = j_{m, \Nx+1}$ with $j_{m,i}$ the $i$\textsuperscript{th} positive zero of the Bessel function $J_m(x)$.  We have also used the identity $J_{m}'(j_{m,q}) = -J_{m+1}(j_{m,q})$.
+
+\begin{widetext}
+\subsubsection{Example 2: $f'(R)=0$ and $\tilde{f}(K)=0$}
+\label{sec:BoundaryConditionsNeumannDirichlet}
+
+\begin{align}
+  \tilde{f}_R(k_p) &\approx \frac{2 R^2}{S^2} \sum_{q=1}^{\Nx} \left[\left(1 - \frac{m^2}{{j'_{m,q}}^2}\right) J_m^2(j'_{m,q})\right]^{-1} f_R(r_q) J_m\left(\frac{j'_{m,p}j_{m,q}}{S} \right),\\
+  f_R(r_p) &\approx \frac{2}{R^2} \sum_{q=1}^{\Nbasis} \frac{1}{J_{m+1}^2(j_{m,q})} \tilde{f}_R(k_q) J_m\left(\frac{j'_{m,q} j_{m,p}}{S}\right),
+\end{align}
+where $k_i = j'_{m,i}/R$, $r_i = R j_{m,i}/S$, $K = S/R$, and $S \approx j'_{m, \Nx+1}$ with $j_{m,i}$ the $i$\textsuperscript{th} positive zero of the Bessel function $J_m(x)$, and $j'_{m,i}$ the $i$\textsuperscript{th} positive zero of $J'_{m}(x)$, except that $x=0$ is considered to be the first zero of $J_0'(x)$ (see Chapter~18 of \citet{Watson:1966}).  Note that the value given for $S$ is approximate and the error of the approximate transform may be improved slightly by numerical optimisation, or as we will see in Section~\ref{sec:ErrorAnalysis}, more significantly by employing the approach described in Section~\ref{sec:Method}.
+
+\end{widetext}
+
+\subsection{Optimised quadrature for the Hankel transform}
+\label{sec:OptimisedQuadrature}
+
+The need to specify a boundary condition for $\tilde{g}(k)$ is an artefact of the method used to construct a quadrature rule to approximate the integral in the finite-domain Hankel transform, Eq.~\eqref{eq:FiniteHankelTransform}.  For that \emph{exact} Hankel transform pair, Eqs.~\eqref{eq:FiniteHankelTransform} and \eqref{eq:FiniteInverseHankelTransform}, boundary conditions only need to be specified for $f(r)$ at $r=R$.  We would therefore prefer to simply choose an optimum quadrature a given boundary condition and truncation $(\Nbasis, \Nx)$.  We will use the procedure described in Section~\ref{sec:Method} to optimise the quadrature rule.  The error properties of this rule will be examined in Section~\ref{sec:ErrorAnalysis}.
 
 \subsection{History of the discrete Hankel transform}
 
-The first record of the idea of the quasi-discrete Hankel transform (QDHT) seems to be \citet{Johnson:1987}, where he focussed exclusively on the Dirichlet boundary conditions.  \citet{Lemoine:1994} appears to have independently rederived it, and briefly discusses a transform with Neumann boundary conditions, mostly in response to the announcement of the work of \citet{Stade:1995}.  \citet{Stade:1995} focus on a transform with Neumann boundary conditions in coordinate space and Dirichlet boundary conditions in k-space (FIXME: verify this).  \citet{Yu:1998} seems to have independently derived the QDHT again as there is no citation for anything preceding it.  \citet{Yu:1998} considered the $m=0$ order case only, and that was generalized by \citet{Guizar-Sicairos:2004}, but that case had already been solved by \citet{Johnson:1987,Lemoine:1994}.  More recently, \citet{Kai-Ming:2009} have derived a transform assuming Neumann boundary conditions in both coordinate space and k-space.
+The first record of the idea of the quasi-discrete Hankel transform (QDHT) seems to be \citet{Johnson:1987}, where he focussed exclusively on the Dirichlet boundary conditions.  \citet{Lemoine:1994} appears to have independently rederived it, and briefly discusses a transform with Neumann boundary conditions, mostly in response to the announcement of the work of \citet{Stade:1995}.  \citet{Stade:1995} focus on a transform with Neumann boundary conditions in coordinate space and Dirichlet boundary conditions in k-space (FIXME: verify this).  \citet{Yu:1998} seems to have independently derived the QDHT again as there is no citation for anything preceding it.  \citet{Yu:1998} considered the $m=0$ order case only, and that was generalised by \citet{Guizar-Sicairos:2004}, but that case had already been solved by \citet{Johnson:1987,Lemoine:1994}.  More recently, \citet{Kai-Ming:2009} have derived a transform assuming Neumann boundary conditions in both coordinate space and k-space.
 
 Note most of the above methods derive transforms which have an undetermined quantity $S$, which is variously chosen to make the determinant of the (normalised) transform matrix unity, or to make the $\phi_{N+1}(x)$ basis function (the first basis function outside the finite basis set) be orthogonal with the first $N$ functions (according to the quadrature formula).
 
@@ -241,124 +316,26 @@ On the other hand, the existing schemes for Hankel transforms with Neumann bound
 The methods presented here can be applied to the Dirichlet case, but with little benefit.  I don't understand why this is, but as we are able to substantially improve the Neumann case, that may be enough.
 
 
-\begin{widetext}
-\section{Application of the method to the Hankel transform}
-\label{sec:HankelApplication}
-We want to solve a problem on a circular domain with symmetry.  We have some homogenous boundary condition at $r=R$ that our solution must satisfy (e.g.\ $u(R) = 0$, $u'(R) = 0$, or in general $a u(R) + b u'(R) = 0$).  We therefore want to expand our solution in terms of Bessel functions that satisfy this boundary condition:
-\begin{align}
-  u_N(r) &= \sum_{i=1}^N u_i \alpha_i J_m(k_i r),
-\end{align}
-where the $k_i$ are the first $N$ roots of $a J_m(k_i R) + b k_i J_m'(k_i R) = 0$, the $u_i$ are the basis function coefficients, and the $\alpha_i$ are normalisation coefficients chosen such that the basis functions $\alpha_i J_m(k_i r)$ are normalised:
-\begin{align}
-  \int_0^R \alpha_i^2 J_m(k_i r) r\, dr &= \frac{R^2}{2}\left[\left(1 - \frac{m^2}{k_i^2 R^2}\right) J_m^2(k R) + {J_m'}^2(k R)\right] = 1,\\
-  \implies \alpha_i &= \frac{1}{R} \sqrt{\frac{2}{\left(1 - \frac{m^2}{k_i^2 R^2}\right) J_m^2(k R) + {J_m'}^2(k R)}}. \label{eq:BesselNormalisation}
-\end{align}
-Equation~\eqref{eq:BesselNormalisation} can be simplified in the common cases of Dirichlet ($u(R) = 0$) or Neumann ($u'(R) = 0$) boundary conditions.
-\end{widetext}
-
-
-The definitions of the Hankel transform and its inverse are
-\begin{align}
-  \tilde{f}(k) &= \int_0^\infty r f(r) J_{m}(k r)\, dr, \\
-  f(r) &= \int_0^\infty k \tilde{f}(k) J_{m}(k r)\, dk. 
-\end{align}
-The Hankel transform is an orthogonal function decomposition which transforms a function $f(r)$ into an integral over the Bessel functions of order $m$. The Bessel functions are orthogonal with respect to the weight factor $r$ and satisfy the orthogonality relation
-\begin{align}
-  \int_0^\infty r J_m(k r) J_m(k' r) \,dr &= \frac{\delta(k - k')}{k}.
-\end{align}
-
-Our goal is to derive a similar orthogonal function decomposition over the finite spatial domain $0 \leq r \leq R$.  The quasi-discrete Hankel transform and its inverse the quasi-discrete inverse Hankel transform (QDIHT) satisfy
-\begin{align}
-  \tilde{f}(k) &= \int_0^R r f(r) J_{m}(k r)\, dr,  \label{eq:QDHT} \\
-  f(r) &= \int_0^K k \tilde{f}(k) J_{m}(k r)\, dk,  \label{eq:QDIHT}
-\end{align}
-where $f(r)$ and $\tilde{f}(k)$ are decomposed as a sum of Bessel functions
-\begin{align}
-  f(r) &= \sum_i f_i J_m(k_i r),  \label{eq:RDecomposition} \\
-  \tilde{f}(k) &= \sum_i \tilde{f}_i J_m(k r_i), \label{eq:KDecomposition}
-\end{align}
-where the $r_i$ and $k_i$ are respectively the grid points of the spatial and wavenumber domains and their distribution has not yet been specified.
-
-\begin{widetext}
-For the basis functions used in the decomposition \eqref{eq:RDecomposition} to be orthogonal, we require for all $i \neq j$
-\begin{align}
-  \int_0^{R} r J_m(k_i r) J_m(k_j r)\, dr &= \frac{R}{k_i^2-k_j^2} \left[k_j J_m(k_i R) J_m'(k_j R) - k_i J_m(k_j R) J_m'(k_i R)\right] = 0, \label{eq:DiscreteROrthogonality}
-\end{align}
-This discrete orthogonality relationship can be satisfied by choosing the $k_i$ such that either\footnote{Actually, this will be satisfied provided $Z_i(R)=0$ where $Z_i(r) = a J_m(k_i r) + b \frac{d}{dr} J_m(k_i r)$ for any values of $a$ and $b$.} $J_m(k_i R) = 0$ or $J_m'(k_i R) = 0$.  In the former case $f(r)$ will satisfy Dirichlet boundary conditions at $r=R$ (i.e.\ $f(R) = 0$) and in the latter case $f(r)$ will satisfy Neumann boundary conditions (i.e.\ $f'(R) = 0$).  The case of Dirichlet boundary conditions has been considered before \citep{Yu:1998,Guizar-Sicairos:2004} and in this paper we focus on the Neumann boundary condition case.
-\end{widetext}
-
-For the $k_i$ to satisfy $J_m'(k_i R) = 0$, the $k_i$ must be given by
-\begin{align}
-  k_i &= j_{m,i}'/R,
-\end{align}
-where $j_{m,i}'$ is defined as in \citet{Abramowitz:1972} as the $i$th positive zero of the derivative of the Bessel function of order $m$, except that $r=0$ is counted as the first zero of $J_0(r)$.
-
-The spatial grid points are similarly given by
-\begin{align}
-  r_i &= j_{m,i}'/K,
-\end{align}
-which is obtained by requiring the basis functions used in \eqref{eq:KDecomposition} to be orthogonal and enforcing Neumann boundary conditions\footnote{It would also be possible to enforce Neumann boundary conditions on $f(r)$ and Dirichlet boundary conditions on $\tilde{f}(k)$.  This loses the self-inverse property, but we don't really care about that as discussed later.  This approach reduces the error of the transform by about a factor of 2, which I'm not sure is enough to justify the additional complexity it would add to the paper.} on $\tilde{f}(k)$.  
-
-Our basis functions now satisfy the orthogonality conditions
-\begin{align}
-  \int_0^R r J_m(k_i r) J_m(k_j r)\, dr &= \frac{1}{2} \delta_{ij} R^2 \left(1 - \frac{m^2}{k_i^2 R^2}\right) J_m^2(k_i R), \label{eq:DiscreteROrthogonalityCondition}\\
-  \int_0^K k J_m(k r_i) J_m(k r_j)\, dk &= \frac{1}{2} \delta_{ij} K^2 \left(1 - \frac{m^2}{K^2 r_i^2}\right) J_m^2(K r_i). \label{eq:DiscreteKOrthogonalityCondition}
-\end{align}
-
-Substituting the decomposition of $\tilde{f}(k)$ given by \eqref{eq:KDecomposition} into the definition of the QDIHT \eqref{eq:QDIHT} we obtain
-\begin{align}
-  f(r_j) &= \int_0^K k \sum_i \tilde{f}_i J_m(k r_i) J_m(k r_j)\, dk, \\
-  &= \tilde{f}_j \frac{1}{2}K^2  \left(1 - \frac{m^2}{K^2 r_j^2}\right) J_m^2(K r_j), \\
-  &= \tilde{f}_j \frac{1}{2}K^2  \left(1 - \frac{m^2}{(j'_{m,j})^2}\right) J_m^2(j'_{m,j}).
-\end{align}
-Next substituting the decomposition of $f(r)$ gives
-\begin{align}
-  \sum_i f_i J_m(k_i r_j) &= \tilde{f}_j \frac{1}{2} K^2 \left(1 - \frac{m^2}{(j'_{m,j})^2}\right) J_m^2(j'_{m,j}), \\
-  \implies \tilde{f}_j &= \frac{2}{K^2} \frac{\sum_i f_i J_m(k_i r_j)}{\left[1-m^2/(j'_{m,j})^2\right] J_m^2(j'_{m,j})} , \\
-  \implies f_i &= \frac{2}{R^2} \frac{\sum_j \tilde{f}_j J_m(k_i r_j)}{\left[1-m^2/(j'_{m,i})^2\right] J_m^2(j'_{m,i})} ,
-\end{align}
-where the last line follows by symmetry between the QDHT and the QDIHT.
-
-Finally we have an explicit expression for the QDHT with Neumann boundary conditions
-\begin{align}
-  f(r_j) &= \sum_i \tilde{f}(k_i) \frac{2}{R^2} \frac{J_m\left(j'_{m,i} j'_{m,j}/S\right)}{\left[1-m^2/(j'_{m,i})^2\right]J_m^2(j'_{m,i})},
-\end{align}
-where $S = K R$.  In practice, the spatial domain $0 \leq r \leq R$ will be specified and $K$ will be chosen to be appropriate for the chosen number of grid points $N$.  $S(N)$ is therefore an as-yet undetermined constant.
-
-\begin{widetext}
-Defining
-\begin{align}
-    F_j &= \frac{R}{\sqrt{1-m^2/(j'_{m,j})^2} \abs{J_m(j'_{m,j})}} f(r_j), \\
-    \tilde{F}_i &= \frac{K}{\sqrt{1-m^2/(j'_{m,i})^2} \abs{J_m(j'_{m,i})}}  \tilde{f}(k_i),
-\end{align}
-the transform reduces to
-\begin{align}
-    \tilde{F}_i &= \sum_j T_{ij} F_j,
-\end{align}
-where
-\begin{align}
-    T_{ij} &= \frac{2 J_m(j'_{m,i} j'_{m,j}/S)}{\sqrt{\left[1-m^2/(j'_{m,i})^2\right]\left[1-m^2/(j'_{m,j})^2\right]} \abs{J_m(j'_{m,i})} \abs{J_m(j'_{m,j})} S}.
-\end{align}
-For comparison, the relevant transform matrix for Dirichlet boundary conditions is\citep{Guizar-Sicairos:2004}
-\begin{align}
-  T_{ij} &= \frac{2 J_m(j_{m,i} j_{m,j}/S)}{\abs{J_{m+1}(j_{m,i})} \abs{J_{m+1}(j_{m,j})} S},
-\end{align}
-where $j_{m,i}$ is the $i$th zero of the Bessel function of order $m$.
-\end{widetext}
-
 
 \section{Error analysis}
 \label{sec:ErrorAnalysis}
 
-We note that the error of our transform is significantly larger than that of the Dirichlet Hankel transform.  Perhaps we speculate on why.  We can demonstrate some comparisons between exact transforms and computed ones.  But also point out that in the case we care about, we want to do a transform and an inverse transform, and we care most about the decomposition of $f(r)$ in terms of Bessel functions, hence we can choose the QDIHT to be norm-preserving, and then compute the inverse transform by taking the inverse of the transformation matrix.  We don't truly care that QDHT=QDIHT, what we care about is the decomposition of $f(r)$ in terms of Bessel functions because it gives us a simple way to compute the Laplacian of $f(r)$.  If we \emph{also} cared about the Laplacian of $\tilde{f}(k)$, i.e.\ $\nabla_k^2 f(k)$, then we can't use this trick.  But in practice, we won't care about that. So hooray!  See any problems with this approach?  A good idea would be to test this approach by computing the error of the Laplacian of a function with and without this trick.  One consequence of this is that we will probably need to redefine the `Gaussian quadrature' in one of the bases, and it may become slightly less accurate.
+Figure~\ref{fig:ErrorScaling} demonstrates that the (quasi-)discrete Hankel transform for Dirichlet boundary conditions has superior error scaling to the transform for Neumann boundary conditions.  Figure~\ref{fig:TransformErrorScaling} shows the improvement in the transform error $\Gamma$ by using the optimised quadrature described in Section~\ref{sec:OptimisedQuadrature}.  The improvement in $\Gamma$ is about 1-3 orders of magnitude for the Dirichlet transform (this would correspond to a uniform reduction in the eigenvalues of the error matrix $\Delta_{ij}$ of a factor of 2-6), however the improvement for the Neumann transform is much more significant of 7-9 orders of magnitude (which corresponds to a uniform reduction of the eigenvalues of the error matrix of $\Delta_{ij}$ of a factor of 50-200).  At the end of the day, it is the eigenvalues of $\Delta_{ij}$ that we wish to reduce, and a reduction of the eigenvalues by a factor of 10 means that we can perform approximately 10 times more transforms (in the process of, for example, numerical integration of a system of PDEs) before being limited by the transform error.
 
-I can also define a transform from $f(r)$ satisfying $f'(R)=0$ to $\tilde{f}(k)$ satisfying $f(K)=0$ which has about half the error of the Neumann Hankel transform, but I'm not sure why I should bother.
+At this point it might be good to look at the eigenvalues of $\Delta_{ij}$ for a couple of cases and state the number of transforms that you could do before the accumulated error reached, say, a level of 1\%.
 
-I think our transform is not exactly its own self-inverse because the orthogonality conditions Eq.~\eqref{eq:DiscreteROrthogonalityCondition} and Eq.~\eqref{eq:DiscreteKOrthogonalityCondition} satisfied by the basis functions are in terms of integrals, not a type of Gaussian quadrature.  What we would really like would be to choose $r_i$, $k_i$, $w_i$, $M_i$ and $S$ such that
-\begin{align}
-  \sum_l w_l J_m(k_i r_l) J_m(k_j r_l) &= \delta_{ij} M_i,
-\end{align}
-but these conditions cannot all be enforced simultaneously.  We have $N^2$ conditions to enforce but only $4N+1$ free parameters at our disposal.
+\begin{figure}
+  \includegraphics[width=8cm]{BesselDirichletErrorScaling}
+  \includegraphics[width=8cm]{BesselNeumannErrorScaling}
+  \caption{Plots of the square relative error in the quadrature integral of $\abs{\phi_1(r)}^2$ as a function of $\Nx$ for different $m=0$ discrete Hankel transforms, but plotted as a function of $S(\Nx)$ to better demonstrate asymptotic scaling.  Note that $S \propto \Nx$ as $\Nx \rightarrow \infty$. (a) Error of transform defined by Dirichlet--Dirichlet boundary conditions (see Section~\ref{sec:BoundaryConditionsDirichletDirichlet}), the error scales as $\mathcal{O}(S^{-12})$ (straight line of best fit is black solid line).  (b) Error of transform defined by Neumann--Dirichlet boundary conditions (see Section~\ref{sec:BoundaryConditionsNeumannDirichlet}), the error scales as $\mathcal{O}(S^{-4})$ (straight line of best fit is solid black line).  The purple dots correspond to the choice $S=j'_{0,\Nx+1}$, while the lower blue dots is the error obtained by choosing $S$ to minimise the error norm $\Gamma$ (see Eq.~\eqref{eq:TransformError}).  For $\Nx \lesssim 5$, this yields an error reduction of between a factor of 3 and 10, but for $\Nx \gtrsim 20$ the improvement is less than a factor of two, and reduces as $\Nx \rightarrow \infty$.\label{fig:ErrorScaling}}
+\end{figure}
+
+\begin{figure}
+  \includegraphics[width=8cm]{BesselDirichletMatrixNormErrorScaling}
+  \includegraphics[width=8cm]{BesselNeumannMatrixNormErrorScaling}
+  \caption{Plots of the transform error $\Gamma$ (see Eq.~\eqref{eq:TransformError}) for different $m=0$ discrete Hankel transforms for $\Nbasis=10$, as a function of $\Nx$.  (a) Dirichlet boundary conditions for $f(r)$, and (b) Neumann boundary conditions for $f(r)$.  In both plots the blue dots are the `standard' (quasi-)discrete Hankel transform described in Sections~\ref{sec:BoundaryConditionsDirichletDirichlet} [Figure (a)] or \ref{sec:BoundaryConditionsNeumannDirichlet} [Figure (b)], and the purple dots are the numerically optimised quadrature (see Section~\ref{sec:OptimisedQuadrature}). \label{fig:TransformErrorScaling}}
+\end{figure}
+
 
 \section{Example calculation}
 \label{sec:Example}
@@ -367,6 +344,9 @@ Ideas for example: wave equation (should be similar to shallow water waves in a 
 \section{Conclusion}
 \label{sec:Conclusion}
 
+If you don't care about your boundary condition for the Hankel transform, use the (quasi-)discrete Hankel transform and don't bother with the numerical optimisation procedure.  The standard transform is almost always accurate enough, or you can always just increase $\Nbasis$ and/or $\Nx$ to significantly improve the error.  If you do care about your boundary condition, and you require Neumann (or another non-Dirichlet boundary condition) at $r=R$, then numerical optimisation of the quadrature rule can significantly reduce the transform error.
+
+The quadrature optimisation procedure described in this paper is general to any problem for which we would like to use the spectral method with a particular set of (orthogonal) basis functions, but for which an exact Gaussian quadrature rule does not exist.  Other potential applications include solving problems on a circular disc \emph{without} any assumptions of angular symmetry.  In this case, the basis functions are $J_m(k_{m,i} r) e^{i m \theta}$, however no optimal quadrature exists.  As we have shown in this paper, for each $m$ a good choice exists for the abscissas $r_i$, but for different values of $m$, the optimal abscissas will be different.  Finding the optimal quadrature for the this problem could be done using the procedure described in this paper.
 
 
 \bibliography{HankelNeumann.bib}
