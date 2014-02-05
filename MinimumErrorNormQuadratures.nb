@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[    136068,       2880]
-NotebookOptionsPosition[    133734,       2803]
-NotebookOutlinePosition[    134114,       2820]
-CellTagsIndexPosition[    134071,       2817]
+NotebookDataLength[    137813,       2920]
+NotebookOptionsPosition[    135392,       2841]
+NotebookOutlinePosition[    135772,       2858]
+CellTagsIndexPosition[    135729,       2855]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -498,10 +498,48 @@ within \[NoBreak]\\!\\(10000\\)\[NoBreak] iterations. \\!\\(\\*ButtonBox[\\\"\
 \[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
 ButtonData:>\\\"paclet:ref/message/FindMinimum/cvmit\\\", ButtonNote -> \
 \\\"FindMinimum::cvmit\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6003960881635637`*^9, 3.6004570665749817`*^9}],
+ CellChangeTimes->{3.6003960881635637`*^9, 3.6004570665749817`*^9, 
+  3.600459653547522*^9}],
 
-Cell[BoxData["$Aborted"], "Output",
- CellChangeTimes->{3.6004572705443068`*^9}]
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"FindMinimum", "::", "cvmit"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Failed to converge to the requested accuracy or precision \
+within \[NoBreak]\\!\\(10000\\)\[NoBreak] iterations. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/FindMinimum/cvmit\\\", ButtonNote -> \
+\\\"FindMinimum::cvmit\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.6003960881635637`*^9, 3.6004570665749817`*^9, 
+  3.600460763444874*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"FindMinimum", "::", "cvmit"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Failed to converge to the requested accuracy or precision \
+within \[NoBreak]\\!\\(10000\\)\[NoBreak] iterations. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/FindMinimum/cvmit\\\", ButtonNote -> \
+\\\"FindMinimum::cvmit\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.6003960881635637`*^9, 3.6004570665749817`*^9, 
+  3.6004619607559223`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \
+\[NoBreak]\\!\\(\\*StyleBox[\\(FindMinimum :: cvmit\\), \
+\\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this calculation. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/stop\\\", \
+ButtonNote -> \\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.6003960881635637`*^9, 3.6004570665749817`*^9, 
+  3.600461960757278*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -2840,47 +2878,49 @@ Cell[15722, 441, 473, 13, 27, "Input"],
 Cell[16198, 456, 437, 12, 43, "Input"],
 Cell[CellGroupData[{
 Cell[16660, 472, 679, 16, 48, "Input"],
-Cell[17342, 490, 534, 10, 23, "Message"],
-Cell[17879, 502, 79, 1, 27, "Output"]
+Cell[17342, 490, 559, 11, 23, "Message"],
+Cell[17904, 503, 559, 11, 23, "Message"],
+Cell[18466, 516, 561, 11, 23, "Message"],
+Cell[19030, 529, 586, 12, 23, "Message"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[17995, 508, 579, 15, 48, "Input"],
-Cell[18577, 525, 509, 10, 23, "Message"],
-Cell[19089, 537, 507, 10, 23, "Message"],
-Cell[19599, 549, 507, 10, 23, "Message"],
-Cell[20109, 561, 535, 11, 23, "Message"]
+Cell[19653, 546, 579, 15, 48, "Input"],
+Cell[20235, 563, 509, 10, 23, "Message"],
+Cell[20747, 575, 507, 10, 23, "Message"],
+Cell[21257, 587, 507, 10, 23, "Message"],
+Cell[21767, 599, 535, 11, 23, "Message"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[20681, 577, 674, 17, 53, "Input"],
-Cell[21358, 596, 24882, 472, 238, "Output"]
+Cell[22339, 615, 674, 17, 53, "Input"],
+Cell[23016, 634, 24882, 472, 238, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[46277, 1073, 464, 14, 53, "Input"],
-Cell[46744, 1089, 27048, 513, 245, "Output"]
+Cell[47935, 1111, 464, 14, 53, "Input"],
+Cell[48402, 1127, 27048, 513, 245, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[73829, 1607, 520, 15, 53, "Input"],
-Cell[74352, 1624, 29831, 570, 245, "Output"]
+Cell[75487, 1645, 520, 15, 53, "Input"],
+Cell[76010, 1662, 29831, 570, 245, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[104220, 2199, 513, 15, 53, "Input"],
-Cell[104736, 2216, 26866, 512, 238, "Output"]
+Cell[105878, 2237, 513, 15, 53, "Input"],
+Cell[106394, 2254, 26866, 512, 238, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[131639, 2733, 127, 1, 27, "Input"],
-Cell[131769, 2736, 289, 8, 33, "Output"]
+Cell[133297, 2771, 127, 1, 27, "Input"],
+Cell[133427, 2774, 289, 8, 33, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[132095, 2749, 342, 9, 27, "Input"],
-Cell[132440, 2760, 342, 7, 43, "Output"]
+Cell[133753, 2787, 342, 9, 27, "Input"],
+Cell[134098, 2798, 342, 7, 43, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[132819, 2772, 314, 9, 27, "Input"],
-Cell[133136, 2783, 316, 7, 43, "Output"]
+Cell[134477, 2810, 314, 9, 27, "Input"],
+Cell[134794, 2821, 316, 7, 43, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[133489, 2795, 126, 2, 27, "Input"],
-Cell[133618, 2799, 100, 1, 27, "Output"]
+Cell[135147, 2833, 126, 2, 27, "Input"],
+Cell[135276, 2837, 100, 1, 27, "Output"]
 }, Open  ]]
 }
 ]

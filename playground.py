@@ -10,6 +10,34 @@ mpmath.mp.prec = 64
 def relative_difference(a, b):
   return numpy.abs(a - b) / (numpy.abs(a) + numpy.abs(b))
 
+def discrete_orthogonality_matrix(weights, abscissas, f, fprime, N_basis_functions = None):
+  assert len(weights) == len(abscissas)
+  
+  N_coordinates = len(weights)
+  N_basis_functions = N_basis_functions or N_coordinates
+  
+  # Evaluate f_i(x_j)
+  functionValues = numpy.array([[f(i, xi) for xi in abscissas] for i in xrange(N_basis_functions)])
+  # Evaluate f_i'(x_j)
+  derivativeValues = numpy.array([[fprime(i, xi) for xi in abscissas] for i in xrange(N_basis_functions)])
+
+  functionValues = numpy.reshape(functionValues, (N_basis_functions, N_coordinates))
+  derivativeValues = numpy.reshape(derivativeValues, (N_basis_functions, N_coordinates))
+  
+  # The orthogonality matrix is \Delta_ij = w_p f_i(x_p) f_j(x_p)
+  # Note that numpy.einsum implements Einstein summation.  It's a pretty handy function.
+  return numpy.einsum('p,ip,jp->ij', weights, functionValues, functionValues)
+
+def maximum_eigenvalue_error(weights, abscissas, f, fprime, N_basis_functions = None):
+  orthogonality_matrix = discrete_orthogonality_matrix(weights, abscissas, f, fprime, N_basis_functions)
+  eigenvalues = numpy.linalg.eigvalsh(orthogonality_matrix)
+  return numpy.max(numpy.abs(numpy.log(eigenvalues)))
+
+def error_tuple(weights, abscissas, f, fprime, N_basis_functions = None):
+  transform_error = quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions)[0]
+  eigenvalue_error = maximum_eigenvalue_error(weights, abscissas, f, fprime, N_basis_functions)
+  return transform_error, eigenvalue_error
+
 def quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions = None):
   """
   This function computes the error of a given quadrature (i.e. specification of weights and abscissas) for
@@ -154,7 +182,7 @@ def optimise_weights_abscissas(weights, abscissas, f, fprime, N_basis_functions 
     error_norm, derror_dweight, derror_dabscissa = quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions)
     return error_norm, numpy.concatenate((derror_dweight, derror_dabscissa))
   
-  result = scipy.optimize.minimize(optimise_function, initial_guess, jac = True, tol=1e-14, options = dict(disp=True, maxiter=10000))
+  result = scipy.optimize.minimize(optimise_function, initial_guess, jac = True, tol=1e-14, options = dict(disp=False, maxiter=10000))
   return numpy.split(result.x, 2)
 
 def simple_bessel_optimise(m, N_coordinates, f, fprime, S_guess, N_basis_functions = None):
@@ -171,7 +199,7 @@ def simple_bessel_optimise(m, N_coordinates, f, fprime, S_guess, N_basis_functio
     return error_norm, derror_ds
     
   result = scipy.optimize.minimize(optimise_function, S_guess, jac = True, tol=1e-12, options = dict(maxiter=10000))
-  print "[guess: %e, normal guess: %e, final: %e]" % (S_guess, numpy.double(mpmath.besseljzero(m, N_coordinates+1, derivative=True)), result.x)
+  # print "[guess: %e, normal guess: %e, final: %e]" % (S_guess, numpy.double(mpmath.besseljzero(m, N_coordinates+1, derivative=True)), result.x)
   return bessel_initial_guess(m, N_coordinates, result.x)
 
 def simple_bessel_neumann_optimise(m, N_coordinates, f, fprime, S_guess, N_basis_functions = None):
@@ -191,22 +219,25 @@ def simple_bessel_neumann_optimise(m, N_coordinates, f, fprime, S_guess, N_basis
   return bessel_neumann_kspace_initial_guess(m, N_coordinates, result.x)
 
 
-def test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values):
+def test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values, initial_guess_fn):
   N_coordinates = N_coordinates or len(bessel_j_zeros)
   N_basis_functions = len(bessel_j_zeros)
   
   f = lambda i, x: bessel_j_values[i] * scipy.special.jn(m, bessel_j_zeros[i] * x)
   fprime = lambda i, x: bessel_j_values[i] * bessel_j_zeros[i] * scipy.special.jvp(m, bessel_j_zeros[i] * x)
 
-  weights, abscissas = bessel_initial_guess(m, N_coordinates, S_guess)
-  print 'bessel', quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions)[0]
+  weights, abscissas = initial_guess_fn(m, N_coordinates, S_guess)
+  initial_guess_error = error_tuple(weights, abscissas, f, fprime, N_basis_functions)
+  # print 'bessel', initial_guess_error
 
   simple_optimised_weights, simple_optimised_abscissas = simple_bessel_optimise(m, N_coordinates, f, fprime, S_guess, N_basis_functions)
-  print 'simple bessel optimised', quadrature_goal_function(simple_optimised_weights, simple_optimised_abscissas, f, fprime, N_basis_functions)[0]
+  s_optimised_error = error_tuple(simple_optimised_weights, simple_optimised_abscissas, f, fprime, N_basis_functions)
+  # print 'simple bessel optimised', s_optimised_error
 
   optimised_weights, optimised_abscissas = optimise_weights_abscissas(simple_optimised_weights, simple_optimised_abscissas, f, fprime, N_basis_functions)
-  print 'bessel optimised', quadrature_goal_function(optimised_weights, optimised_abscissas, f, fprime, N_basis_functions)[0]
-  return optimised_weights, optimised_abscissas
+  fully_optimised_error = error_tuple(optimised_weights, optimised_abscissas, f, fprime, N_basis_functions)
+  # print 'bessel optimised', fully_optimised_error
+  return initial_guess_error, s_optimised_error, fully_optimised_error, optimised_weights, optimised_abscissas
 
 
 def test_bessel_neumann(m, N_coordinates, N_basis_functions = None):
@@ -219,7 +250,7 @@ def test_bessel_neumann(m, N_coordinates, N_basis_functions = None):
   if m > 0:
     bessel_j_values /= numpy.sqrt(1.0 - (m / bessel_j_zeros)**2)
 
-  return test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values)
+  return test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values, bessel_initial_guess)
 
 def test_bessel_dirichlet(m, N_coordinates, N_basis_functions = None):
   N_basis_functions = N_basis_functions or N_coordinates
@@ -228,7 +259,7 @@ def test_bessel_dirichlet(m, N_coordinates, N_basis_functions = None):
   bessel_j_zeros = numpy.double([mpmath.besseljzero(m, i) for i in xrange(1, N_basis_functions+1)])
   bessel_j_values = numpy.sqrt(2.0) / numpy.abs(scipy.special.jn(m + 1, bessel_j_zeros))
   
-  return test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values)
+  return test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values, bessel_initial_guess)
 
 def test_bessel_neumann_neumann(m, N_coordinates, N_basis_functions = None):
   N_basis_functions = N_basis_functions or N_coordinates
@@ -243,15 +274,28 @@ def test_bessel_neumann_neumann(m, N_coordinates, N_basis_functions = None):
   f = lambda i, x: bessel_j_values[i] * scipy.special.jn(m, bessel_j_zeros[i] * x)
   fprime = lambda i, x: bessel_j_values[i] * bessel_j_zeros[i] * scipy.special.jvp(m, bessel_j_zeros[i] * x)
   
-  weights, abscissas = bessel_neumann_kspace_initial_guess(m, N_coordinates, S_guess)
-  print 'bessel', quadrature_goal_function(weights, abscissas, f, fprime, N_basis_functions)[0]
-  
-  simple_optimised_weights, simple_optimised_abscissas = simple_bessel_neumann_optimise(m, N_coordinates, f, fprime, S_guess, N_basis_functions)
-  print 'simple bessel optimised', quadrature_goal_function(simple_optimised_weights, simple_optimised_abscissas, f, fprime, N_basis_functions)[0]
-  
-  optimised_weights, optimised_abscissas = optimise_weights_abscissas(simple_optimised_weights, simple_optimised_abscissas, f, fprime, N_basis_functions)
-  print 'bessel optimised', quadrature_goal_function(optimised_weights, optimised_abscissas, f, fprime, N_basis_functions)[0]
-  return optimised_weights, optimised_abscissas
+  return test_bessel(m, S_guess, N_coordinates, bessel_j_zeros, bessel_j_values, bessel_neumann_kspace_initial_guess)
+
+
+Nlimit = 50
+# Nbasis, Nx, minimisation_method, error_type
+dirichlet_error = numpy.zeros((Nlimit+1, Nlimit+1, 3, 2))
+neumann_error = numpy.zeros((Nlimit+1, Nlimit+1, 3, 2))
+neumann_neumann_error = numpy.zeros((Nlimit+1, Nlimit+1, 3, 2))
+
+for Nbasis in xrange(1, Nlimit + 1):
+  for Nx in xrange(Nbasis, Nlimit + 1):
+    print "Nbasis=%i, Nx=%i" % (Nbasis, Nx)
+    for test_function, error_out in [(test_bessel_dirichlet, dirichlet_error), (test_bessel_neumann, neumann_error), (test_bessel_neumann_neumann, neumann_neumann_error)]:
+      error_tuples = test_function(0, Nx, Nbasis)[0:3]
+      for i in xrange(3):
+        error_out[Nbasis,Nx,i, :] = error_tuples[i]
+
+import h5py
+f = h5py.File("error.h5", "w")
+f.create_dataset("dirichlet_error", data=dirichlet_error)
+f.create_dataset("neumann_error", data=neumann_error)
+f.create_dataset("neumann_neumann_error", data=neumann_neumann_error)
 
 # test_bessel_neumann(0, N)
 # w2, x2 = test_bessel_neumann_neumann(0, N)
@@ -296,7 +340,10 @@ def test_bessel_neumann_neumann(m, N_coordinates, N_basis_functions = None):
 # test_bessel_neumann(0, 7, 4)
 # print "4, 8"
 # test_bessel_neumann(0, 8, 4)
-test_bessel_dirichlet(0, 20, 10)
+# print "Dirichlet"
+# test_bessel_dirichlet(0, 10, 10)
+# print "Neumann"
+# test_bessel_neumann(0, 10, 10)
 # test_bessel_dirichlet(0, 5, 10)
 # test_bessel_dirichlet(0, 10, 10)
 

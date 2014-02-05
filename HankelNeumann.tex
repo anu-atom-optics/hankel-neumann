@@ -125,8 +125,9 @@ Often the discrete basis function decomposition is related to an integral transf
 \end{align}
 for which we would like to preserve a result like Parseval's theorem\footnote{Parseval's theorem reduces to Plancheral's theorem $\int w(x) |f(x)|^2\, dx = \int w(k) |\tilde{f}(k)|^2\, dk$ for $g(x)$ equal to $f(x)$.}, i.e.
 \begin{align}
-  \int w(x) f^*(x) g(x)\, dx &= \int \tilde{w}(k) \tilde{f}^*(k) \tilde{g}(k)\, dk.
+  \int w(x) f^*(x) g(x)\, dx &= \int \tilde{w}(k) \tilde{f}^*(k) \tilde{g}(k)\, dk,
 \end{align}
+where $\tilde{w}(k)$ is the $k$-space weight function.
 
 From equation~\eqref{eq:IntegralTransform}, we can relate $\tilde{f}(k)$ to the basis coefficients $f_i$,
 \begin{align}
@@ -323,6 +324,8 @@ The methods presented here can be applied to the Dirichlet case, but with little
 Figure~\ref{fig:ErrorScaling} demonstrates that the (quasi-)discrete Hankel transform for Dirichlet boundary conditions has superior error scaling to the transform for Neumann boundary conditions.  Figure~\ref{fig:TransformErrorScaling} shows the improvement in the transform error $\Gamma$ by using the optimised quadrature described in Section~\ref{sec:OptimisedQuadrature}.  The improvement in $\Gamma$ is about 1-3 orders of magnitude for the Dirichlet transform (this would correspond to a uniform reduction in the eigenvalues of the error matrix $\Delta_{ij}$ of a factor of 2-6), however the improvement for the Neumann transform is much more significant of 7-9 orders of magnitude (which corresponds to a uniform reduction of the eigenvalues of the error matrix of $\Delta_{ij}$ of a factor of 50-200).  At the end of the day, it is the eigenvalues of $\Delta_{ij}$ that we wish to reduce, and a reduction of the eigenvalues by a factor of 10 means that we can perform approximately 10 times more transforms (in the process of, for example, numerical integration of a system of PDEs) before being limited by the transform error.
 
 At this point it might be good to look at the eigenvalues of $\Delta_{ij}$ for a couple of cases and state the number of transforms that you could do before the accumulated error reached, say, a level of 1\%.
+
+A quick calculation suggests that the maximum number of transforms for $\Nbasis=50$, $\Nx=50$ before the transform error reaches 1\% (defined by one of the norms of the eigenvectors of $\Delta_{ij} + \delta_{ij}$ changing by $1\%$ after repeated application of the discrete Hankel transform and its inverse) is $4 \times 10^6$ for the Dirichlet--Dirichlet transform, $61$ for the Neumann--Dirichlet transform, $y$ for the optimised Dirichlet transform, and $z$ for the optimised Neumann transform.
 
 \begin{figure}
   \includegraphics[width=8cm]{BesselDirichletErrorScaling}
